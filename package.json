@@ -1,0 +1,31 @@
+{
+  "name": "@red-cup-engineering/weiqi-engine",
+  "version": "0.3.0",
+  "type": "module",
+  "description": "Weiqi's deterministic game engine: rules, scoring, SGF, semantic move events, and a Cartridge replay adapter. It specializes the shared game-engine contract without duplicating its log or hash protocol.",
+  "license": "UNLICENSED",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./build-browser": "./scripts/build-browser-kernel.mjs",
+    "./match": "./src/match.mjs",
+    "./replay": "./src/replay.mjs"
+  },
+  "deliberateEntries": [
+    {
+      "path": "src/index.mjs",
+      "reason": "The kernel chokepoint that weiqi-content-checker's DEFAULT_KERNEL_PATH resolves through via import.meta.resolve, not a re-export convenience."
+    }
+  ],
+  "files": [
+    "src",
+    "scripts/build-browser-kernel.mjs",
+    "README.md"
+  ],
+  "dependencies": {
+    "@red-cup-engineering/gaming": "workspace:*"
+  },
+  "scripts": {
+    "test": "node --test 'test/*.test.mjs'"
+  }
+}
