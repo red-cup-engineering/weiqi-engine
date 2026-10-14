@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BLACK, WHITE } from "../src/board.mjs";
 import { admitWeiqiMatchCommand, createWeiqiMatch, verifyWeiqiMatch } from "../src/match.mjs";
+import { WALL_MOVES } from "./helpers/session-fixtures.mjs";
 
 const config = Object.freeze({ size: 5, ruleset: "chinese" });
 const players = Object.freeze({ black: "principal:black", white: "principal:white" });
@@ -21,8 +22,10 @@ function accept(match, principal, command) {
 
 function walledMatch() {
   let match = createWeiqiMatch(config, players);
-  const script = [["B1", players.black], ["D1", players.white], ["B2", players.black], ["D2", players.white], ["B3", players.black], ["D3", players.white], ["B4", players.black], ["D4", players.white], ["B5", players.black], ["D5", players.white]];
-  for (const [move, principal] of script) match = accept(match, principal, { kind: "play", move });
+  for (const [index, move] of WALL_MOVES.entries()) {
+    match = accept(match, index % 2 === 0 ? players.black : players.white,
+      { kind: "play", move });
+  }
   match = accept(match, players.black, { kind: "pass" });
   match = accept(match, players.white, { kind: "play", move: "A3" });
   match = accept(match, players.black, { kind: "pass" });
