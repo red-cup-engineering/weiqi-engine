@@ -11,6 +11,7 @@ import {
   weiqiSessionToSgfRecord,
 
 } from "../src/session.mjs";
+import { WALL_MOVES, WALL_WITH_INVADER, sessionAfterMoves } from "./helpers/session-fixtures.mjs";
 
 function admit(session, command) {
   const admitted = admitWeiqiGameCommand(session, session.version, command);
@@ -34,8 +35,7 @@ test("a resignation ends the game for the resigning color and every later comman
 });
 
 test("a settlement is admitted only after two passes, removes the named stones, and counts under the ruleset", () => {
-  let session = createWeiqiGameSession({ size: 5, ruleset: "chinese" });
-  for (const move of ["B1", "D1", "B2", "D2", "B3", "D3", "B4", "D4", "B5", "D5", "pass", "A3"]) session = admit(session, { kind: "play", move });
+  let session = sessionAfterMoves({ size: 5, ruleset: "chinese" }, [...WALL_MOVES, "pass", "A3"]);
   const early = admitWeiqiGameCommand(session, session.version, { kind: "settle", dead: ["A3"] });
   assert.deepEqual(early, { ok: false, reason: "main-phase-open" });
   session = admit(session, { kind: "pass" });
@@ -80,8 +80,7 @@ test("versioned sessions reject settlement after resumed play until the next pas
 
 
 test("a Japanese settlement counts territory and the prisoner the dead stone becomes", () => {
-  let session = createWeiqiGameSession({ size: 5, ruleset: "japanese" });
-  for (const move of ["B1", "D1", "B2", "D2", "B3", "D3", "B4", "D4", "B5", "D5", "pass", "A3", "pass", "pass"]) session = admit(session, move === "pass" ? { kind: "pass" } : { kind: "play", move });
+  let session = sessionAfterMoves({ size: 5, ruleset: "japanese" }, WALL_WITH_INVADER);
   session = admit(session, { kind: "settle", dead: ["A3"] });
   const result = session.state.result;
   assert.ok(result && result.by === "count");
@@ -129,8 +128,7 @@ test("the SGF projection carries handicap stones, komi, the White-first move ord
 });
 
 test("a counted result serializes as the winner plus margin, and a draw as 0", () => {
-  let session = createWeiqiGameSession({ size: 5, ruleset: "chinese" });
-  for (const move of ["B1", "D1", "B2", "D2", "B3", "D3", "B4", "D4", "B5", "D5", "pass", "pass"]) session = admit(session, move === "pass" ? { kind: "pass" } : { kind: "play", move });
+  let session = sessionAfterMoves({ size: 5, ruleset: "chinese" }, [...WALL_MOVES, "pass", "pass"]);
   session = admit(session, { kind: "settle", dead: [] });
   assert.equal(weiqiSessionToSgfRecord(session).result, "W+7.5");
   let drawn = createWeiqiGameSession({ size: 5, ruleset: "newzealand" });
