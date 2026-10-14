@@ -9,7 +9,8 @@
     ".": "./src/index.mjs",
     "./build-browser": "./scripts/build-browser-kernel.mjs",
     "./match": "./src/match.mjs",
-    "./replay": "./src/replay.mjs"
+    "./replay": "./src/replay.mjs",
+    "./testing": "./test/helpers/session-fixtures.mjs"
   },
   "deliberateEntries": [
     {
@@ -20,12 +21,16 @@
   "files": [
     "src",
     "scripts/build-browser-kernel.mjs",
-    "README.md"
+    "README.md",
+    "test/helpers/session-fixtures.mjs"
   ],
   "dependencies": {
     "@red-cup-engineering/gaming": "workspace:*"
   },
   "scripts": {
-    "test": "node --test 'test/*.test.mjs'"
+    "check": "for f in src/*.mjs scripts/*.mjs test/*.test.mjs test/helpers/*.mjs; do node --check \"$f\" || exit 1; done",
+    "test": "npm run check && node --test 'test/*.test.mjs'",
+    "test:properties": "node --test test/properties.test.mjs",
+    "test:browser": "node --test test/browser-build.test.mjs"
   }
 }
