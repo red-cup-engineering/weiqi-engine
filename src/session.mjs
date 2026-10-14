@@ -120,11 +120,10 @@ function gameFor(config, commands) {
 }
 
 /**
- * Construct a frozen record from the authoritative Game. On admission the
- * caller has already replayed and validated the previous commands, then
- * successfully applied the new command to that Game. Reuse it instead of
- * replaying the entire log a second time. Creation from an arbitrary command
- * list still validates by replaying all commands.
+ * Construct a frozen record from the authoritative Game. An in-process
+ * successor forks the already-validated rules history before accepting one
+ * new command; imported/unrecognized sessions replay the full log. The
+ * ephemeral WeakMap is not a second persisted game state or proof of identity.
  */
 function sessionFromCommands(config, commands, game = gameFor(config, commands)) {
   const session = Object.freeze({
