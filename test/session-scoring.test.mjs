@@ -2,23 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BLACK, EMPTY, WHITE, coordToPoint } from "../src/board.mjs";
 import { computeTerritory } from "../src/scoring.mjs";
-import { admitWeiqiGameCommand, createWeiqiGameSession, scoreWeiqiSession } from "../src/session.mjs";
+import { admitWeiqiGameCommand, scoreWeiqiSession } from "../src/session.mjs";
+import { walledSession } from "./helpers/session-fixtures.mjs";
 
-// A 5x5 game that splits the board: Black walls column B, White walls column
-// D, column C stays neutral, then both pass. Under area scoring each side has
-// five stones and five points of territory; under territory scoring each has
-// five points and no prisoners.
-function walledSession(ruleset, extraMoves = []) {
-  let session = createWeiqiGameSession({ size: 5, ruleset });
-  const moves = ["B1", "D1", "B2", "D2", "B3", "D3", "B4", "D4", "B5", "D5", ...extraMoves];
-  for (const move of moves) {
-    const admitted = admitWeiqiGameCommand(session, session.version, move === "pass" ? { kind: "pass" } : { kind: "play", move });
-    assert.equal(admitted.ok, true, `${move} must be admitted`);
-    if (admitted.ok) session = admitted.session;
-  }
-  return session;
-}
-
+// Walled positions come from the shared upstream test-only session fixture.
 function ownerAt(ownership, coord) {
   return ownership[coordToPoint(5, 5, coord)];
 }
