@@ -11,6 +11,11 @@ import { marksWholeDeadGroups } from "./scoring.mjs";
 import { createPositionFromCells } from "./position.mjs";
 import { getRuleset, handicapPoints } from "./rulesets.mjs";
 
+// Only sessions constructed by this engine get an in-process validated rules machine.
+// Imported/deserialized records must replay their accepted commands. This WeakMap
+// adds no serialized checkpoint, second rules authority, or persistent state.
+const validatedGames = new WeakMap();
+
 function handicapOf(config) {
   return config.handicap ?? 0;
 }
@@ -122,12 +127,16 @@ function gameFor(config, commands) {
  * list still validates by replaying all commands.
  */
 function sessionFromCommands(config, commands, game = gameFor(config, commands)) {
-  return Object.freeze({
+  const session = Object.freeze({
     config: frozenConfig(config),
     version: commands.length,
     commands: Object.freeze(commands.map(freezeCommand)),
     state: snapshot(config, commands, game),
   });
+  // A completed game is only reread, never advanced: leave it to full replay
+  // rather than share a potentially mutable nested score with an external view.
+  if (game.result === null) validatedGames.set(session, game);
+  return session;
 }
 
 /** Creates a replayable session. Invalid historical commands are rejected at the boundary. */
@@ -141,7 +150,14 @@ export function materializeWeiqiGame(session) {
     throw new TypeError("Weiqi session version must equal its accepted command count");
   }
   if (!sameConfig(session.config, session.state.config)) throw new TypeError("Weiqi session state belongs to another configuration");
-  return gameFor(session.config, session.commands);
+  const validated = validatedGames.get(session);
+  if (validated === undefined) return gameFor(session.config, session.commands);
+  // Game.fork preserves immutable positions and full ko/superko history.
+  // Clone event payloads too: callers may inspect or modify the returned
+  // mutable Game, but cannot affect the private already-admitted record.
+  const game = validated.fork();
+  game.moveEvents = structuredClone(game.moveEvents);
+  return game;
 }
 
 /**
