@@ -14,32 +14,53 @@ engineering package.
 
 - [Rulesets](../../../../../../../../../science-services-section/services/philosophy-services-section/services/relationality-services-section/services/agency-services-section/services/being-services-section/services/doing-services-section/services/playing-services-section/services/gaming-services-section/services/board-games-services-section/services/weiqi-services-section/content/text/documents/articles/teaching-articles/references/rulesets.md) — the five-ruleset
   comparison table (Chinese, Japanese, AGA, New Zealand, Ing) whose stable identifiers
-  `rulesets.mts`'s `RULESETS` object transcribes directly, one ruleset per `Ruleset` record.
+  `rulesets.mjs`'s `RULESETS` object transcribes directly, one ruleset per `Ruleset` record.
 - [Regression Positions](../../../../../../../../../science-services-section/services/philosophy-services-section/services/relationality-services-section/services/agency-services-section/services/being-services-section/services/doing-services-section/services/playing-services-section/services/gaming-services-section/services/board-games-services-section/services/weiqi-services-section/content/text/documents/articles/teaching-articles/references/regression-positions.md)
   — thirteen hand-verified board positions (ko, superko, suicide, seki, dead-stone settlement,
-  both scoring modes, handicap) that `test/*.test.mts` assert against by `id` (`R1`, `R6`,
+  both scoring modes, handicap) that `test/*.test.mjs` assert against by `id` (`R1`, `R6`,
   `R9`, ...), so doctrine and code cite each other rather than drifting apart.
 
 ## Running tests
 
-```
-npm test    # node --test 'test/*.test.mts'
+```sh
+npm test                 # syntax-check src, scripts and tests; run all Node tests
+npm run test:properties  # deterministic, seeded legal-play invariants
+npm run test:browser     # upstream browser generator's single-build contract
 ```
 
-Current state: focused rules, browser projection, and replay tests cover board/position mechanics,
-every ruleset, all thirteen regression positions, scoring (area, territory, seki, dead-stone
-removal), SGF round-tripping, the semantic event layer, and property-based invariant checks.
+The test layout follows **one owner per invariant**: `test/game.test.mjs`,
+`session-commands.test.mjs`, `session-scoring.test.mjs`, `match*.test.mjs`,
+`sgf.test.mjs` and `properties.test.mjs` own their respective upstream rules.
+`test/helpers/session-fixtures.mjs` supplies one admitted 5×5 wall position
+and a move-to-command adapter across scoring, commands and match tests.
+Fixture admission fails immediately with the command index and refusal;
+a string `"pass"` is converted to a real `{kind:"pass"}` command, never
+a fabricated `{kind:"play",move:"pass"}`.
+
+The browser projection test now builds **once** into an isolated temporary
+directory, then checks the exact generated module set, provenance, whitespace
+and actual ESM imports. The downstream `weiqi-web` package separately owns
+checking its *committed browser files* byte-for-byte against this builder.
+Those are distinct contracts; neither needs a second implementation of the
+browser generator. The property suite drives reproducible seeded game logs,
+including full replay, hashes, SGF, liberties, and independently counted area.
+Each temporary directory is cleaned in a `finally` block, even on failure.
+
+The checks include board/position mechanics, all declared rulesets, the
+reference regression positions, both scoring modes, seki, captures and dead
+stones, session/match replay, SGF and semantic events. A full cross-package
+release remains the application's `verify:release` responsibility.
 
 ## Public API at a glance
 
-Everything re-exports from `src/index.mts`:
+Everything re-exports from `src/index.mjs`:
 
-- **`board.mts`** — `Color`/`Cell` constants (`BLACK`, `WHITE`, `EMPTY`), coordinate
+- **`board.mjs`** — `Color`/`Cell` constants (`BLACK`, `WHITE`, `EMPTY`), coordinate
   conversion (`coordToPoint`, `pointToCoord`), `findGroup` (stones + liberties via flood fill).
-- **`position.mts`** — `Position` (immutable: board, `toMove`, prisoner counts, both Zobrist
+- **`position.mjs`** — `Position` (immutable: board, `toMove`, prisoner counts, both Zobrist
   hashes), `createEmptyPosition`, `applyStonePlacement` (captures + suicide check),
   `applyPass`. Every mutator returns a new `Position`; none mutate in place.
-- **`rulesets.mts`** — `Ruleset`, the `RULESETS` table (`chinese`/`japanese`/`aga`/`new_zealand`/
+- **`rulesets.mjs`** — `Ruleset`, the `RULESETS` table (`chinese`/`japanese`/`aga`/`new_zealand`/
   `ing`), `getRuleset(name)`, `handicapPoints(size, count)`.
 - **`game.mjs`** — `Game`, the rules-owned history for ko/superko, pass
   streaks, semantic events and game completion. `play(move)` returns a
@@ -121,11 +142,11 @@ Everything re-exports from `src/index.mts`:
   65 per-cell keys in GF(2)^64, produces two distinct boards with the
   identical hash, and plays the legal sequence that hash-only superko
   incorrectly refused. True board repetitions still remain illegal.
-- **`events.mts`** — the semantic event layer; see below.
-- **`replay.mts`** — the `@red-cup-engineering/gaming/running` specialization. It accepts only
+- **`events.mjs`** — the semantic event layer; see below.
+- **`replay.mjs`** — the `@red-cup-engineering/gaming/running` specialization. It accepts only
   `{ kind: "play", move }` and `{ kind: "pass" }`, reconstructs rules-owned state from that
   record, and refuses illegal/tampered intents instead of skipping them.
-- **`match.mts`** — the Node-only durable-match semantic core. It attributes each accepted
+- **`match.mjs`** — the Node-only durable-match semantic core. It attributes each accepted
   command to one of two principals, requires an injected timestamp and idempotency key, appends
   one Cartridge entry, and derives its session checkpoint and state hash from that log. A play or
   pass belongs to the side to move; a resignation belongs to its own color at any time; a
@@ -138,7 +159,7 @@ Everything re-exports from `src/index.mts`:
 
 ## Semantic event vocabulary
 
-`annotateMove`/`annotatePass` (`events.mts`) turn one move's before/after position diff into
+`annotateMove`/`annotatePass` (`events.mjs`) turn one move's before/after position diff into
 `SemanticEvent[]`. Each event's `term` is a glossary term slug and its `termRef` is that
 term's file path (via `TERM_PATH`), so a UI can hover-card or a post-game timeline can link
 straight to this section's own corpus definition — the executable-glossary motto, literally:
@@ -155,7 +176,7 @@ straight to this section's own corpus definition — the executable-glossary mot
 
 `cut`, `false-eye`, `seki`, and `group-settled` are deliberately **not** detected here — each
 needs a real life-and-death read (or, for `cut`, a `cut.md` that doesn't exist yet), not a
-sound one-move board diff. `events.mts`'s module doc explains each deferral; house doctrine is
+sound one-move board diff. `events.mjs`'s module doc explains each deferral; house doctrine is
 that this code stays a sound model of the theory rather than merely something that runs.
 `eye-formed` itself ships only the smallest sound approximation available to a move diff (a
 "simple eye": every orthogonal neighbor the same color, no diagonal-control check).
