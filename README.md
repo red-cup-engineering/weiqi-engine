@@ -112,13 +112,17 @@ Everything re-exports from `src/index.mjs`:
   wait for two new passes, not rely on a previous counting phase. The state carries
   `commands`, `handicap`, and `result` (`null` while open; `{ by: "resignation", winner, loser }`
   or `{ by: "count", winner, mode, dead, score }`), and `Game.play` refuses with `game-ended`
-  once a result exists. On admission, the engine replays the existing
-  immutable command prefix once, applies the new command, and snapshots that
-  already-validated Game directly. Creating or independently reconstructing a
-  session from an arbitrary command list still replays and validates every
-  command; `test/session.test.mjs` checks that both construction paths yield
-  structurally identical sessions across sizes, rulesets, handicap, settlement
-  and resignation. No mutable Game is retained inside the immutable record.
+  once a result exists. Trusted in-process sessions now fork their
+  existing validated Game and apply **only the next command**, including
+  the original ko/superko history. They never pay the full-history replay cost
+  again just to admit one move. The mutable Game stays private in an ephemeral
+  WeakMap keyed by an engine-constructed immutable session; public readers
+  receive separate forks and separate event payloads. Imported records,
+  arbitrary deserialized sessions and completed games still replay and
+  validate their full command sequence. `test/session.test.mjs` verifies
+  all game-rules parity, single-move admission cost, foreign replay,
+  tamper refusal and mutable-view independence. This cache grants no new
+  server or payment authority and adds no serialized checkpoint.
 - **`sgf.mjs`** — a generic recursive-descent SGF parser/serializer
   (`parseSgfCollection`/`serializeSgfCollection`, retaining all variations) plus
   `gameRecordToSgf`/`sgfToGameRecord` for linear game records. On import the
