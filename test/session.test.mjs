@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { Game } from "../src/game.mjs";
 import {
   admitWeiqiGameCommand,
   createWeiqiGameSession,
@@ -114,4 +115,64 @@ test("handicap, settlement, and resignation receipts remain exactly reproducible
     }
     assert.ok(session.state.result, "both terminal commands must produce a result");
   }
+});
+
+test("locally admitted sessions reuse their validated rules history; imported sessions always replay", () => {
+  const originalPlay = Game.prototype.play;
+  let played = 0;
+  Game.prototype.play = function countedPlay(...args) {
+    played += 1;
+    return originalPlay.apply(this, args);
+  };
+  try {
+    let session = createWeiqiGameSession(config);
+    const moves = ["C3", "G7", "D3", "F7", "E3", "F6"];
+    for (const move of moves) {
+      const next = admitWeiqiGameCommand(session, session.version, { kind: "play", move });
+      assert.equal(next.ok, true, move);
+      session = next.session;
+    }
+    assert.equal(played, moves.length,
+      "newly admitted local moves must not replay the accepted prefix at each turn");
+
+    const left = materializeWeiqiGame(session);
+    const right = materializeWeiqiGame(session);
+    assert.equal(played, moves.length, "views of trusted sessions fork history without replay");
+    assert.equal(left.history.length, moves.length + 1);
+    assert.equal(right.history.length, moves.length + 1);
+    assert.equal(left.play("B3").ok, true);
+    assert.equal(right.history.length, moves.length + 1,
+      "a caller's mutable Game cannot change another continuation");
+    assert.equal(materializeWeiqiGame(session).history.length, moves.length + 1);
+
+    const imported = structuredClone(session);
+    const before = played;
+    const reconstructed = materializeWeiqiGame(imported);
+    assert.equal(played - before, moves.length,
+      "unknown or imported records must prove every historical move");
+    assert.deepEqual(reconstructed.current.board, right.current.board);
+    const corrupted = structuredClone(session);
+    corrupted.commands[0].move = "Z99";
+    assert.throws(() => materializeWeiqiGame(corrupted), /Cannot reconstruct Weiqi session/,
+      "a forged imported record must not inherit the trusted local cache");
+  } finally {
+    Game.prototype.play = originalPlay;
+  }
+});
+
+test("mutating a derived game event cannot corrupt the internally validated session", () => {
+  let session = createWeiqiGameSession(config);
+  for (const move of ["E4", "D4", "D3", "A1", "C4", "A2", "D5"]) {
+    const outcome = admitWeiqiGameCommand(session, session.version, { kind: "play", move });
+    assert.equal(outcome.ok, true, move);
+    session = outcome.session;
+  }
+  const first = materializeWeiqiGame(session);
+  const event = first.moveEvents.at(-1).find((e) => e.type === "capture");
+  assert.ok(event, "the rules engine must report the real capture");
+  const originalCount = event.detail.stonesCaptured;
+  event.detail.stonesCaptured = 999;
+  const again = materializeWeiqiGame(session);
+  assert.equal(again.moveEvents.at(-1).find((e) => e.type === "capture").detail.stonesCaptured,
+    originalCount, "published view events must not mutate the cached rules history");
 });
