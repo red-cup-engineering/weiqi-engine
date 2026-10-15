@@ -52,11 +52,12 @@ export const RULESETS = Object.freeze({
 });
 
 export function getRuleset(name) {
-  const r = RULESETS[name];
-  if (!r) {
+  // A ruleset identifier is one of the five authored, finite names.
+  // Object.prototype keys such as "constructor" are not Go rulesets.
+  if (typeof name !== "string" || !Object.hasOwn(RULESETS, name)) {
     throw new Error(`Unknown ruleset: "${name}" (known: ${Object.keys(RULESETS).join(", ")})`);
   }
-  return r;
+  return RULESETS[name];
 }
 
 // --- Handicap placement -----------------------------------------------
@@ -133,7 +134,15 @@ export function handicapPoints(size, count) {
   if (!Number.isInteger(count) || count < 2) {
     throw new Error(`Handicap count must be an integer >= 2, got ${count}`);
   }
-  const table = size === 9 ? NINE_BY_COUNT : size === 13 ? THIRTEEN_BY_COUNT : NINETEEN_BY_COUNT;
+  // Only these sizes have an authored standard fixed-star handicap table.
+  // Smaller Go regression boards are legal to simulate, but importing 19x19
+  // star coordinates onto such a board would be a false configuration.
+  const table = size === 9 ? NINE_BY_COUNT
+    : size === 13 ? THIRTEEN_BY_COUNT
+      : size === 19 ? NINETEEN_BY_COUNT : null;
+  if (table === null) {
+    throw new Error(`No standard fixed-star handicap placement for ${size}x${size}`);
+  }
   const points = table[count];
   if (!points) {
     const max = Math.max(...Object.keys(table).map(Number));
