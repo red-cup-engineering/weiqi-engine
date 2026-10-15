@@ -3,18 +3,33 @@ import assert from "node:assert/strict";
 import { planTacticalTryouts } from "../src/tactics.mjs";
 import { BLACK, WHITE, createWeiqiGameSession, materializeWeiqiGame,
   admitWeiqiGameCommand } from "../src/index.mjs";
-import { buildStudyReplay } from "./helpers/tactics-study.mjs";
+
+// Build accepted frame evidence from the real engine command admission,
+// without borrowing a downstream Study renderer or a fictitious test helper.
+function admissionFrames(commands) {
+  let session = createWeiqiGameSession({ size: 9, ruleset: "chinese" });
+  const frames = [{ version: 0, mover: null, command: null, events: [] }];
+  for (const command of commands) {
+    const mover = session.state.toMove;
+    const outcome = admitWeiqiGameCommand(session, session.version, command);
+    assert.equal(outcome.ok, true);
+    if (!outcome.ok) throw new Error(outcome.reason);
+    session = outcome.session;
+    frames.push({ version: session.version, command, mover, events: outcome.events });
+  }
+  return { session, frames };
+}
 
 test("a player is invited to recreate only their own engine-accepted events", () => {
-  const session = createWeiqiGameSession({ size: 9, ruleset: "chinese" }, [
+  const commands = [
     { kind: "play", move: "C3" }, { kind: "play", move: "C4" },
     { kind: "play", move: "B4" }, { kind: "play", move: "A1" },
     { kind: "play", move: "D4" }, { kind: "play", move: "A2" },
     { kind: "play", move: "C5" },
-  ]);
-  const study = buildStudyReplay(session);
-  const black = planTacticalTryouts(study.frames, { color: BLACK });
-  const white = planTacticalTryouts(study.frames, { color: WHITE });
+  ];
+  const { session, frames } = admissionFrames(commands);
+  const black = planTacticalTryouts(frames, { color: BLACK });
+  const white = planTacticalTryouts(frames, { color: WHITE });
   const capture = black.invitations.find(invitation => invitation.kind === "capture");
   assert.ok(capture, "the recorded capture is a real playable puzzle");
   assert.equal(capture.color, BLACK);
