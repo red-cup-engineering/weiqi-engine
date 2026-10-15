@@ -110,12 +110,12 @@ function rebuild(config, players, log) {
       intent.kind !== "weiqi-command" ||
       !isPrincipal(intent.principal) ||
       !isPrincipal(intent.idempotencyKey) ||
-      !isExpectedVersion(intent.expectedVersion) ||
+      !isExpectedVersion(intent.expectedRevision) ||
       intent.configId !== expectedConfigId ||
       !isCommand(intent.command) ||
       idempotencyKeys.has(intent.idempotencyKey)
     ) throw new TypeError("Weiqi match log contains an invalid or duplicate command envelope");
-    if (intent.expectedVersion !== session.version) throw new TypeError("Weiqi match log command does not name its pre-state version");
+    if (intent.expectedRevision !== index) throw new TypeError("Weiqi match log command does not name its prior accepted revision");
     const refusal = admissionRefusal(frozenPlayers, session, intent.principal, intent.command);
     if (refusal !== null) throw new TypeError(`Weiqi match log command is not admissible: ${refusal}`);
     if (intent.command.kind === "settle" && !(pendingSettlement !== null && pendingSettlement.principal !== intent.principal && sameDead(pendingSettlement.dead, intent.command.dead))) {
@@ -123,7 +123,7 @@ function rebuild(config, players, log) {
       // (or a differing counter-proposal) is recorded and waits.
       pendingSettlement = Object.freeze({ principal: intent.principal, dead: Object.freeze(normalizedDead(intent.command.dead)) });
     } else {
-      const admitted = admitWeiqiGameCommand(session, intent.expectedVersion, intent.command);
+      const admitted = admitWeiqiGameCommand(session, session.version, intent.command);
       if (!admitted.ok) throw new TypeError(`Weiqi match log command is not legal: ${admitted.reason}`);
       session = admitted.session;
       pendingSettlement = null;
@@ -133,7 +133,7 @@ function rebuild(config, players, log) {
       kind: "weiqi-command",
       principal: intent.principal,
       idempotencyKey: intent.idempotencyKey,
-      expectedVersion: intent.expectedVersion,
+      expectedRevision: intent.expectedRevision,
       configId: intent.configId,
       command: freezeCommand(intent.command),
     }));
@@ -145,6 +145,7 @@ function rebuild(config, players, log) {
     config: frozenConfig,
     players: frozenPlayers,
     log: frozenLog,
+    revision: frozenLog.length, // every accepted log command, including a disputed settlement offer
     session,
     pendingSettlement,
     stateHash: hashPosition({ state: session.state, pendingSettlement }),
@@ -160,10 +161,10 @@ export function createWeiqiMatch(config, players) {
 export function verifyWeiqiMatch(match) {
   try {
     const rebuilt = rebuild(match.config, match.players, match.log);
-    if (rebuilt.session.version !== match.session.version || rebuilt.stateHash !== match.stateHash) {
+    if (rebuilt.revision !== match.revision || rebuilt.session.version !== match.session.version || rebuilt.stateHash !== match.stateHash) {
       return Object.freeze({ valid: false, reason: "match checkpoint does not match its accepted log" });
     }
-    return Object.freeze({ valid: true, session: rebuilt.session, stateHash: rebuilt.stateHash });
+    return Object.freeze({ valid: true, revision: rebuilt.revision, session: rebuilt.session, stateHash: rebuilt.stateHash });
   } catch (error) {
     return Object.freeze({ valid: false, reason: error instanceof Error ? error.message : "cannot replay match" });
   }
@@ -181,19 +182,19 @@ export function admitWeiqiMatchCommand(
 ) {
   const checked = verifyWeiqiMatch(match);
   if (!checked.valid) return Object.freeze({ ok: false, reason: "invalid-match" });
-  if (!Number.isFinite(receivedAt) || !isPrincipal(request?.principal) || !isPrincipal(request?.idempotencyKey) || !isExpectedVersion(request?.expectedVersion) || !isCommand(request?.command)) {
+  if (!Number.isFinite(receivedAt) || !isPrincipal(request?.principal) || !isPrincipal(request?.idempotencyKey) || !isExpectedVersion(request?.expectedRevision) || !isCommand(request?.command)) {
     return Object.freeze({ ok: false, reason: "invalid-request" });
   }
   const existing = match.log.find((entry) => entry.intent.idempotencyKey === request.idempotencyKey);
   if (existing) {
     const intent = existing.intent;
-    if (intent.principal === request.principal && intent.expectedVersion === request.expectedVersion && commandEqual(intent.command, request.command)) {
+    if (intent.principal === request.principal && intent.expectedRevision === request.expectedRevision && commandEqual(intent.command, request.command)) {
       return Object.freeze({ ok: true, duplicate: true, match, events: Object.freeze([]) });
     }
     return Object.freeze({ ok: false, reason: "idempotency-conflict" });
   }
-  if (request.expectedVersion !== match.session.version) {
-    return Object.freeze({ ok: false, reason: "version-mismatch", expectedVersion: request.expectedVersion, actualVersion: match.session.version });
+  if (request.expectedRevision !== match.revision) {
+    return Object.freeze({ ok: false, reason: "revision-mismatch", expectedRevision: request.expectedRevision, actualRevision: match.revision });
   }
   if (request.principal !== match.players.black && request.principal !== match.players.white) {
     return Object.freeze({ ok: false, reason: "unknown-principal" });
@@ -204,16 +205,16 @@ export function admitWeiqiMatchCommand(
   if (proposes) {
     // The engine will count once the other player matches; the proposal itself
     // must still name real stones, so check it against the engine now.
-    const trial = admitWeiqiGameCommand(match.session, request.expectedVersion, request.command);
+    const trial = admitWeiqiGameCommand(match.session, match.session.version, request.command);
     if (!trial.ok) return Object.freeze({ ok: false, reason: "illegal-command" });
   }
-  const admitted = proposes ? null : admitWeiqiGameCommand(match.session, request.expectedVersion, request.command);
+  const admitted = proposes ? null : admitWeiqiGameCommand(match.session, match.session.version, request.command);
   if (admitted !== null && !admitted.ok) return Object.freeze({ ok: false, reason: "illegal-command" });
   const intent = Object.freeze({
     kind: "weiqi-command",
     principal: request.principal,
     idempotencyKey: request.idempotencyKey,
-    expectedVersion: request.expectedVersion,
+    expectedRevision: request.expectedRevision,
     configId: configIdentifier(match.config),
     command: freezeCommand(request.command),
   });
