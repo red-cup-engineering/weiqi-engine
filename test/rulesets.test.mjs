@@ -50,6 +50,29 @@ test("getRuleset throws on an unknown name", () => {
   assert.throws(() => getRuleset("klingon"), /Unknown ruleset/);
 });
 
+test("ruleset selection rejects inherited object keys instead of treating them as Go rules", () => {
+  for (const name of ["constructor", "__proto__", "toString", "hasOwnProperty", "valueOf"]) {
+    assert.throws(() => getRuleset(name), /Unknown ruleset/,
+      `Object.prototype.${name} is not a Go ruleset`);
+  }
+  for (const name of Object.keys(RULESETS)) {
+    assert.strictEqual(getRuleset(name), RULESETS[name],
+      `every actual Go ruleset remains unchanged: ${name}`);
+  }
+});
+
+test("handicap placement refuses nonstandard board sizes instead of borrowing 19x19 coordinates", () => {
+  for (const size of [1, 5, 7, 8, 10, 17, 20]) {
+    assert.throws(() => handicapPoints(size, 2), /No standard fixed-star/,
+      `there is no sourced fixed-hoshi table for ${size}x${size}`);
+  }
+  for (const size of [9, 13, 19]) {
+    const points = handicapPoints(size, 2);
+    assert.equal(points.length, 2);
+  }
+});
+
+
 test("R13: 4-stone 9x9 handicap is exactly {C3, G3, C7, G7}", () => {
   const pts = handicapPoints(9, 4);
   assert.deepEqual(new Set(pts), new Set(["C3", "G3", "C7", "G7"]));

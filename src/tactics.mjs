@@ -44,7 +44,8 @@ export function planTacticalTryouts(frames, { color = null, limit = 5 } = {}) {
     if (color !== null && color !== frame.mover) continue;
     played++;
     for (const event of frame.events) {
-      const rule = kinds[event?.type];
+      const rule = typeof event?.type === "string" && Object.hasOwn(kinds, event.type)
+        ? kinds[event.type] : null;
       if (!rule || (event.type === "capture" && event.detail?.selfCapture)) continue;
       counts[event.type]++;
       const potency = event.type === "capture"

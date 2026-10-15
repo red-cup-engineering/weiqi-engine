@@ -90,3 +90,26 @@ test("contradictory or invalid frame boundaries refuse rather than invent lineag
   assert.throws(() => planTacticalTryouts([{ version: 0, events: [] }], { color: 3 }), /Black/);
   assert.throws(() => planTacticalTryouts([{ version: 0, events: [] }], { limit: 0 }), /limit/);
 });
+
+test("only explicitly owned rules-event kinds qualify a tactical invitation", () => {
+  const opening = { version: 0, events: [] };
+  const invented = {
+    version: 1, mover: BLACK, command: { kind: "play", move: "A1" },
+    events: ["constructor", "toString", "hasOwnProperty", "__proto__", "valueOf", "unknown"]
+      .map(type => ({ type })),
+  };
+  const rejected = planTacticalTryouts([opening, invented]);
+  assert.deepEqual(rejected.invitations, [],
+    "an inherited Object property is not an authored Go rules event");
+  assert.deepEqual(rejected.evidence, [], "invalid event names must not contaminate counts");
+  assert.equal(rejected.observedMoves, 1, "the original accepted-move count remains unchanged");
+
+  const withRealEvent = {
+    ...invented,
+    events: [...invented.events, { type: "capture", detail: { stonesCaptured: 2 } }],
+  };
+  const retained = planTacticalTryouts([opening, withRealEvent]);
+  assert.deepEqual(retained.invitations.map(invitation => invitation.kind), ["capture"],
+    "known Go source-event kinds continue to qualify alongside unrecognized names");
+  assert.deepEqual(retained.evidence, [{ kind: "capture", count: 1 }]);
+});

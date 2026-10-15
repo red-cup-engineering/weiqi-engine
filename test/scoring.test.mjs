@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeTerritory, removeDeadStones, scoreArea, scoreTerritory } from "../src/scoring.mjs";
+import { computeTerritory, marksWholeDeadGroups, removeDeadStones, scoreArea, scoreTerritory } from "../src/scoring.mjs";
 import { BLACK, WHITE, EMPTY, coordToPoint } from "../src/board.mjs";
 import { getRuleset } from "../src/rulesets.mjs";
 import { parseDiagram } from "./helpers/diagram.mjs";

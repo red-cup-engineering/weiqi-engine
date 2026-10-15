@@ -10,7 +10,7 @@ let keys = 0;
 
 function submit(match, principal, command) {
   keys += 1;
-  return admitWeiqiMatchCommand(match, { principal, idempotencyKey: `k${keys}`, expectedVersion: match.session.version, command }, 1000 + keys);
+  return admitWeiqiMatchCommand(match, { principal, idempotencyKey: `k${keys}`, expectedRevision: match.revision, command }, 1000 + keys);
 }
 
 function accept(match, principal, command) {
@@ -59,6 +59,33 @@ test("a settlement counts only once both principals have proposed the same dead 
   assert.equal(first.match.session.state.result, null);
   assert.equal(first.match.session.version, match.session.version, "a proposal does not advance the session");
   assert.equal(first.match.log.length, match.log.length + 1, "but it is in the log");
+  assert.equal(first.match.revision, match.revision + 1,
+    "an accepted settlement proposal advances the match revision, not the rules-session version");
+
+  const stale = admitWeiqiMatchCommand(first.match, {
+    principal: players.white, idempotencyKey: "stale-count-" + keys,
+    expectedRevision: match.revision, command: { kind: "settle", dead: [] },
+  }, 2000 + keys);
+  assert.deepEqual(stale, {
+    ok: false, reason: "revision-mismatch",
+    expectedRevision: match.revision, actualRevision: first.match.revision,
+  }, "a counterproposal from the original version must not overwrite a pending agreement");
+  assert.deepEqual(first.match.pendingSettlement, { principal: players.black, dead: ["A3"] });
+
+  const firstIntent = first.match.log.at(-1).intent;
+  const duplicate = admitWeiqiMatchCommand(first.match, {
+    principal: players.black, idempotencyKey: firstIntent.idempotencyKey,
+    expectedRevision: match.revision, command: { kind: "settle", dead: [" a3 "] },
+  }, 2010 + keys);
+  assert.equal(duplicate.ok, true);
+  assert.equal(duplicate.duplicate, true);
+  assert.strictEqual(duplicate.match, first.match, "duplicate must not create a second proposal");
+  const keyConflict = admitWeiqiMatchCommand(first.match, {
+    principal: players.black, idempotencyKey: firstIntent.idempotencyKey,
+    expectedRevision: match.revision, command: { kind: "settle", dead: [] },
+  }, 2020 + keys);
+  assert.deepEqual(keyConflict, { ok: false, reason: "idempotency-conflict" });
+
 
   const counter = submit(first.match, players.white, { kind: "settle", dead: [] });
   assert.ok(counter.ok && "proposed" in counter && counter.proposed);
