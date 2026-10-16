@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/weiqi-engine",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "description": "Weiqi's deterministic game engine: rules, scoring, SGF, semantic move events, and a Cartridge replay adapter. It specializes the shared game-engine contract without duplicating its log or hash protocol.",
   "license": "UNLICENSED",
@@ -25,12 +25,13 @@
     "test/helpers/session-fixtures.mjs"
   ],
   "dependencies": {
-    "@red-cup-engineering/gaming": "workspace:*"
+    "@red-cup-engineering/gaming": "0.1.10"
   },
   "scripts": {
     "check": "for f in src/*.mjs scripts/*.mjs test/*.test.mjs test/helpers/*.mjs; do node --check \"$f\" || exit 1; done",
     "test": "npm run check && node --test 'test/*.test.mjs'",
     "test:properties": "node --test test/properties.test.mjs",
     "test:browser": "node --test test/browser-build.test.mjs"
-  }
+  },
+  "private": false
 }
