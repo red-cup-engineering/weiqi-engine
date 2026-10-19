@@ -150,3 +150,38 @@ export function handicapPoints(size, count) {
   }
   return points;
 }
+
+
+/**
+ * A game's scoring compensation is a rule of Go, not a browser display
+ * setting. Standard even-game komi belongs to the declared ruleset above;
+ * handicap games use nominal 0.5 komi. Under area counting Chinese rules
+ * transfer half a point per handicap stone from Black and to White, while
+ * AGA adds one White point for each handicap stone after the first. Japanese
+ * territory and Ing/New Zealand area counts add no further compensation.
+ *
+ * Source: Lenticule Science / Handicap Placement and Komi Values; British Go
+ * Association's Comparison of Some Go Rules and AGA Rules.
+ * This returns pure numeric scoring inputs; it does not adjudicate stones.
+ */
+export function handicapScorePolicy(ruleset, handicap = 0, mode = ruleset?.scoring === "territory" ? "territory" : "area") {
+  if (!ruleset || !Object.hasOwn(RULESETS, ruleset.name) || RULESETS[ruleset.name] !== ruleset)
+    throw new TypeError("Handicap score needs an original declared Weiqi ruleset");
+  if (!Number.isSafeInteger(handicap) || handicap < 0 || handicap === 1)
+    throw new TypeError("Handicap score needs 0 or an integer of at least two stones");
+  if (mode !== "area" && mode !== "territory")
+    throw new TypeError("Handicap score needs area or territory counting");
+  if (handicap === 0) {
+    return Object.freeze({
+      komi: mode === "territory" ? (ruleset.komi_territory ?? ruleset.komi) : ruleset.komi,
+      blackAdjustment: 0, whiteAdjustment: 0,
+    });
+  }
+  const chineseArea = mode === "area" && ruleset.name === "chinese";
+  const agaArea = mode === "area" && ruleset.name === "aga";
+  return Object.freeze({
+    komi: 0.5,
+    blackAdjustment: chineseArea ? -handicap / 2 : 0,
+    whiteAdjustment: chineseArea ? handicap / 2 : agaArea ? handicap - 1 : 0,
+  });
+}
