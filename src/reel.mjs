@@ -65,9 +65,9 @@ export function planReplayMoments(frames, { limit = 9 } = {}) {
           promote({ kind: "eye-formed", title: "Eye shape formed",
             impact: 15, holdMs: 1200, cue: "chime" });
           break;
-        case "game-ended":
-          promote({ kind: "game-ended", title: "Two passes end play",
-            impact: 90, holdMs: 1700, cue: "chime" });
+        case "counting-opened":
+          promote({ kind: "counting-opened", title: "Players open the count",
+            impact: 34, holdMs: 1350, cue: "tick" });
           break;
         default:
           break;
