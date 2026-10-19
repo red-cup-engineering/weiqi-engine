@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BLACK, EMPTY, WHITE, coordToPoint } from "../src/board.mjs";
 import { computeTerritory } from "../src/scoring.mjs";
-import { admitWeiqiGameCommand, scoreWeiqiSession } from "../src/session.mjs";
+import { admitWeiqiGameCommand, createWeiqiGameSession, materializeWeiqiGame, scoreWeiqiSession } from "../src/session.mjs";
 import { walledSession } from "./helpers/session-fixtures.mjs";
 
 // Walled positions come from the shared upstream test-only session fixture.
@@ -148,3 +148,33 @@ test("session scoring refuses partial group death but counts whole groups", () =
   }
 });
 
+
+test("accepted and provisional scores cannot be rewritten after being read", () => {
+  // Source-owned scoreArea/scoreTerritory are arithmetic helpers; the
+  // complete countPosition projection owns the immutable scored receipt.
+  for (const ruleset of ["chinese", "japanese", "aga", "newzealand", "ing"]) {
+    const counting = createWeiqiGameSession({ size: 9, ruleset }, [
+      { kind: "play", move: "C3" },
+      { kind: "play", move: "G7" },
+      { kind: "pass" },
+      { kind: "pass" },
+    ]);
+    const preview = scoreWeiqiSession(counting);
+    const previewScore = preview.score.blackScore;
+    assert.equal(Object.isFrozen(preview.score), true, ruleset + " provisional score is immutable");
+    assert.equal(Reflect.set(preview.score, "blackScore", -999), false);
+    assert.equal(preview.score.blackScore, previewScore);
+
+    const admitted = admitWeiqiGameCommand(counting, counting.version,
+      { kind: "settle", dead: [] });
+    assert.equal(admitted.ok, true, ruleset + " settlement is admitted");
+    if (!admitted.ok) continue;
+    const original = admitted.session.state.result.score.blackScore;
+    assert.equal(Object.isFrozen(admitted.session.state.result.score), true);
+    assert.equal(Reflect.set(admitted.session.state.result.score, "blackScore", 999), false);
+    assert.equal(admitted.session.state.result.score.blackScore, original);
+    const fromHistory = materializeWeiqiGame(admitted.session).result.score;
+    assert.equal(Object.isFrozen(fromHistory), true, ruleset + " replayed score is immutable");
+    assert.equal(fromHistory.blackScore, original);
+  }
+});
