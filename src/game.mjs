@@ -123,12 +123,11 @@ export class Game {
       const next = applyPass(prev);
       this.history.push(next);
       this.passStreak += 1;
-      // "endsMainPhase" is the transition, not the level: only the pass
-      // that takes the streak to exactly 2 fires game-ended, mirroring
-      // mainPhaseEnded's own one-way flip below (see pass.md/R12).
-      const endsMainPhase = this.passStreak === 2;
+      // A pass pair opens counting, not a winner. The historical phase
+      // observation survives genuine resumed play without preventing it.
+      const opensCounting = this.passStreak === 2;
       if (this.passStreak >= 2) this.mainPhaseEnded = true;
-      const events = annotatePass(prev.toMove, endsMainPhase);
+      const events = annotatePass(prev.toMove, opensCounting);
       this.moveEvents.push(events);
       return { ok: true, events, passStreak: this.passStreak };
     }
