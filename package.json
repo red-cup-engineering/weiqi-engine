@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/weiqi-engine",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "type": "module",
   "description": "Weiqi's deterministic game engine: rules, scoring, SGF, semantic move events, and a Cartridge replay adapter. It specializes the shared game-engine contract without duplicating its log or hash protocol.",
   "repository": {
