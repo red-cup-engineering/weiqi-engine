@@ -203,7 +203,16 @@ straight to this section's own corpus definition — the executable-glossary mot
 | `connection` | `connection` | `connection.md` |
 | `eye-formed` | `eye` | `eye.md` |
 | `group-killed` | `life-and-death` | `life-and-death.md` |
-| `pass`, `game-ended` | `pass` | `pass.md` |
+| `pass`, `counting-opened` | `pass` | `pass.md` |
+
+The source-owned `counting-opened` observation is emitted by the
+second consecutive pass. It opens dead-stone agreement without deciding a
+winner and may occur again after legal resumed play and a new pass pair.
+It retains Science's `pass` term reference and a two-pass trigger.
+`game-ended` remains the distinct and correct **command refusal** once
+a resignation or settlement has been accepted, not a semantic pass event.
+No legacy event alias is fabricated. The replay director now renders counting
+as a transitional tick; only admitted settlement or resignation is terminal.
 
 `cut`, `false-eye`, `seki`, and `group-settled` are deliberately **not** detected here — each
 needs a real life-and-death read (or, for `cut`, a `cut.md` that doesn't exist yet), not a
