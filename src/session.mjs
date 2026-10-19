@@ -9,7 +9,7 @@ import { BLACK, WHITE, coordToPoint } from "./board.mjs";
 import { Game, countPosition } from "./game.mjs";
 import { marksWholeDeadGroups } from "./scoring.mjs";
 import { createPositionFromCells } from "./position.mjs";
-import { getRuleset, handicapPoints } from "./rulesets.mjs";
+import { getRuleset, handicapPoints, handicapScorePolicy } from "./rulesets.mjs";
 
 // Only sessions constructed by this engine get an in-process validated rules machine.
 // Imported/deserialized records must replay their accepted commands. This WeakMap
@@ -110,7 +110,7 @@ function snapshot(config, commands, game) {
 
 function gameFor(config, commands) {
   getRuleset(config.ruleset);
-  const game = new Game(config.size, config.ruleset, initialPosition(config));
+  const game = new Game(config.size, config.ruleset, initialPosition(config), handicapOf(config));
   for (const command of commands) {
     if (!isWeiqiGameCommand(command)) throw new TypeError("Weiqi command must be { kind: 'play', move }, { kind: 'pass' }, { kind: 'resign', color }, or { kind: 'settle', dead }");
     const outcome = applyCommand(game, command);
@@ -246,7 +246,7 @@ export function weiqiSessionToSgfRecord(session) {
   const record = {
     size,
     ruleset: session.config.ruleset,
-    komi: game.ruleset.komi,
+    komi: handicapScorePolicy(game.ruleset, game.handicap).komi,
     moves,
   };
   if (handicap.length > 0) record.handicap = [...handicap];
