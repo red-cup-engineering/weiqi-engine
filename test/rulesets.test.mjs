@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { RULESETS, getRuleset, handicapPoints } from "../src/rulesets.mjs";
+import { RULESETS, getRuleset, handicapPoints, handicapScorePolicy } from "../src/rulesets.mjs";
 
 test("all five rulesets.md rulesets are present with the documented parameter values", () => {
   assert.deepEqual(RULESETS.chinese, {
@@ -125,4 +125,35 @@ test("19x19 handicap tables match handicap-placement-and-komi-values.md exactly,
   const nine = new Set(handicapPoints(19, 9));
   assert.deepEqual(nine, new Set([...eight, "K10"]));
   assert.equal(nine.size, 9, "9 stones is all nine hoshi");
+});
+
+
+test("pure Weiqi compensation distinguishes handicap games from even-game komi", () => {
+  const policies = [
+    ["japanese", { komi: 0.5, blackAdjustment: 0, whiteAdjustment: 0 }],
+    ["chinese", { komi: 0.5, blackAdjustment: -2, whiteAdjustment: 2 }],
+    ["aga", { komi: 0.5, blackAdjustment: 0, whiteAdjustment: 3 }],
+    ["newzealand", { komi: 0.5, blackAdjustment: 0, whiteAdjustment: 0 }],
+    ["ing", { komi: 0.5, blackAdjustment: 0, whiteAdjustment: 0 }],
+  ];
+  for (const [name, expected] of policies) {
+    const ruleset = getRuleset(name);
+    const policy = handicapScorePolicy(ruleset, 4);
+    assert.deepEqual(policy, expected, name + " uses its own handicap compensation");
+    assert.equal(Object.isFrozen(policy), true);
+    const even = handicapScorePolicy(ruleset, 0);
+    assert.equal(even.komi, ruleset.komi, name + " even-game komi stays unchanged");
+    assert.equal(even.blackAdjustment, 0);
+    assert.equal(even.whiteAdjustment, 0);
+  }
+  const aga = getRuleset("aga");
+  assert.equal(handicapScorePolicy(aga, 0, "territory").komi, 6.5);
+  assert.equal(handicapScorePolicy(aga, 4, "territory").komi, 0.5);
+  assert.equal(handicapScorePolicy(aga, 4, "territory").whiteAdjustment, 0,
+    "AGA area-count correction must not also be counted in territory mode");
+  for (const count of [-1, 1, 1.2, Number.NaN]) {
+    assert.throws(() => handicapScorePolicy(getRuleset("chinese"), count), /Handicap score/);
+  }
+  assert.throws(() => handicapScorePolicy(getRuleset("chinese"), 4, "imaginary"), /area or territory/);
+  assert.throws(() => handicapScorePolicy({ ...getRuleset("chinese") }, 4), /original declared/);
 });
