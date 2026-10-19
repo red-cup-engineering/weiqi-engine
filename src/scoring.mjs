@@ -11,6 +11,7 @@
 
 import { BLACK, WHITE, findGroup, neighbors } from "./board.mjs";
 import { boardHash, situationalHash } from "./zobrist.mjs";
+import { handicapScorePolicy } from "./rulesets.mjs";
 
 export function computeTerritory(position) {
   const { width, height, board } = position;
@@ -130,11 +131,12 @@ function marginString(blackScore, whiteScore) {
  * `position` should already have dead stones removed (see
  * removeDeadStones) — area scoring does not otherwise consult prisoners.
  */
-export function scoreArea(position, ruleset, territory = computeTerritory(position)) {
+export function scoreArea(position, ruleset, territory = computeTerritory(position), handicap = 0) {
   const { blackStones, whiteStones } = countStones(position);
   const { blackTerritory, whiteTerritory } = territory;
-  const blackScore = blackStones + blackTerritory;
-  const whiteScore = whiteStones + whiteTerritory + ruleset.komi;
+  const { komi, blackAdjustment, whiteAdjustment } = handicapScorePolicy(ruleset, handicap, "area");
+  const blackScore = blackStones + blackTerritory + blackAdjustment;
+  const whiteScore = whiteStones + whiteTerritory + komi + whiteAdjustment;
   return {
     blackStones,
     whiteStones,
@@ -142,6 +144,8 @@ export function scoreArea(position, ruleset, territory = computeTerritory(positi
     whiteTerritory,
     blackPrisoners: position.capturedWhiteStones,
     whitePrisoners: position.capturedBlackStones,
+    ...(handicap > 0 ? { handicap, komi, blackHandicapAdjustment: blackAdjustment,
+      whiteHandicapAdjustment: whiteAdjustment } : {}),
     blackScore,
     whiteScore,
     margin: marginString(blackScore, whiteScore),
@@ -159,13 +163,14 @@ export function scoreArea(position, ruleset, territory = computeTerritory(positi
  * rulesets.md's "Notes per parameter/Scoring" and pass.md) and falls back
  * to `.komi` for every other ruleset, which has no such split.
  */
-export function scoreTerritory(position, ruleset, territory = computeTerritory(position)) {
+export function scoreTerritory(position, ruleset, territory = computeTerritory(position), handicap = 0) {
   const { blackStones, whiteStones } = countStones(position);
   const { blackTerritory, whiteTerritory } = territory;
   const blackPrisoners = position.capturedWhiteStones;
   const whitePrisoners = position.capturedBlackStones;
-  const blackScore = blackTerritory + blackPrisoners;
-  const whiteScore = whiteTerritory + whitePrisoners + (ruleset.komi_territory ?? ruleset.komi);
+  const { komi, blackAdjustment, whiteAdjustment } = handicapScorePolicy(ruleset, handicap, "territory");
+  const blackScore = blackTerritory + blackPrisoners + blackAdjustment;
+  const whiteScore = whiteTerritory + whitePrisoners + komi + whiteAdjustment;
   return {
     blackStones,
     whiteStones,
@@ -173,6 +178,8 @@ export function scoreTerritory(position, ruleset, territory = computeTerritory(p
     whiteTerritory,
     blackPrisoners,
     whitePrisoners,
+    ...(handicap > 0 ? { handicap, komi, blackHandicapAdjustment: blackAdjustment,
+      whiteHandicapAdjustment: whiteAdjustment } : {}),
     blackScore,
     whiteScore,
     margin: marginString(blackScore, whiteScore),
