@@ -134,7 +134,7 @@ test("occupied and off-board moves are rejected with the right reason", () => {
   if (!offBoard.ok) assert.equal(offBoard.reason, "off-board");
 });
 
-test("pass is always legal and two consecutive passes set mainPhaseEnded, firing pass and game-ended events", () => {
+test("pass is always legal and two consecutive passes open counting without a winner", () => {
   const game = new Game(9, "chinese");
   const first = game.play("pass");
   assert.ok(first.ok);
@@ -147,10 +147,12 @@ test("pass is always legal and two consecutive passes set mainPhaseEnded, firing
   const second = game.play("pass");
   assert.ok(second.ok);
   assert.equal(game.mainPhaseEnded, true);
+  assert.equal(game.result, null, "a provisional count has no winner");
+  assert.equal(game.isLegal("C3"), true, "the player can resume play from counting");
   if (second.ok) {
     // The second consecutive pass is both a pass and, per pass.md/R12, the
     // move that ends the main phase -- both events fire on this one turn.
-    assert.deepEqual(second.events.map((e) => e.type), ["pass", "game-ended"]);
+    assert.deepEqual(second.events.map((e) => e.type), ["pass", "counting-opened"]);
     assert.equal(second.events[1].detail.color, WHITE);
     assert.equal(second.events[1].term, "pass");
   }
@@ -164,16 +166,16 @@ test("passStreak resets after a stone is played", () => {
   assert.equal(game.mainPhaseEnded, false);
 });
 
-test("game-ended fires only on the pass that completes the pair, not again on a third consecutive pass", () => {
+test("counting-opened fires only when an active pass pair is completed", () => {
   const game = new Game(9, "chinese");
   game.play("pass");
-  game.play("pass"); // passStreak reaches 2 here; game-ended already asserted above.
+  game.play("pass"); // passStreak reaches 2 here; counting-opened already asserted above.
   const third = game.play("pass");
   assert.ok(third.ok);
   if (third.ok) assert.deepEqual(third.events.map((e) => e.type), ["pass"]);
 });
 
-test("game-ended fires again the next time a pass pair completes, after resuming play (per pass.md's resumption convention)", () => {
+test("counting-opened fires again after resumed play and a new pass pair", () => {
   const game = new Game(9, "chinese");
   game.play("pass");
   game.play("pass"); // main phase ends once.
@@ -182,7 +184,7 @@ test("game-ended fires again the next time a pass pair completes, after resuming
   game.play("pass");
   const second = game.play("pass");
   assert.ok(second.ok);
-  if (second.ok) assert.deepEqual(second.events.map((e) => e.type), ["pass", "game-ended"]);
+  if (second.ok) assert.deepEqual(second.events.map((e) => e.type), ["pass", "counting-opened"]);
 });
 
 
