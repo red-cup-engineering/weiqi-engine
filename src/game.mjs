@@ -4,7 +4,7 @@
 
 import { BLACK, WHITE, coordToPoint, isBoardSize, opponent, pointToCoord } from "./board.mjs";
 import { applyPass, applyStonePlacement, createEmptyPosition } from "./position.mjs";
-import { getRuleset } from "./rulesets.mjs";
+import { getRuleset, handicapPoints } from "./rulesets.mjs";
 import { annotateMove, annotatePass } from "./events.mjs";
 import { computeTerritory, marksWholeDeadGroups, removeDeadStones, scoreArea, scoreTerritory } from "./scoring.mjs";
 
@@ -69,6 +69,7 @@ export class Game {
   /** Square board side length (see isBoardSize in board.mts for the accepted range). */
  size;
  ruleset;
+ handicap = 0;
  history;
  moveEvents = [];
   activeKoPoint = null;
@@ -77,10 +78,14 @@ export class Game {
   /** Set once the game has ended by resignation or an agreed count; play() refuses afterwards. */
   result = null;
 
-  constructor(size, rulesetName, initial) {
+  constructor(size, rulesetName, initial, handicap = 0) {
     if (!isBoardSize(size)) throw new Error(`Unsupported board size: ${size}`);
+    if (!Number.isSafeInteger(handicap) || handicap < 0 || handicap === 1)
+      throw new TypeError("A Go handicap must be zero or a supported fixed-star count");
+    if (handicap > 0) handicapPoints(size, handicap);
     this.size = size;
     this.ruleset = getRuleset(rulesetName);
+    this.handicap = handicap;
     this.history = [initial ?? createEmptyPosition(size)];
   }
 
@@ -99,7 +104,7 @@ export class Game {
    * No historical commands are replayed or separate rules implemented.
    */
   fork() {
-    const branch = new Game(this.size, this.ruleset.name, this.history[0]);
+    const branch = new Game(this.size, this.ruleset.name, this.history[0], this.handicap);
     branch.history = this.history.slice();
     branch.moveEvents = this.moveEvents.slice();
     branch.activeKoPoint = this.activeKoPoint;
@@ -255,7 +260,7 @@ export function countPosition(game, deadPoints = []) {
   // counts and accepted game results. Session snapshots expose this object;
   // its values must not be writable after a command has been admitted.
   const score = Object.freeze(mode === "territory"
-    ? scoreTerritory(position, game.ruleset, territory)
-    : scoreArea(position, game.ruleset, territory));
+    ? scoreTerritory(position, game.ruleset, territory, game.handicap)
+    : scoreArea(position, game.ruleset, territory, game.handicap));
   return Object.freeze({ mode, position, score, ownership: territory.ownership });
 }
