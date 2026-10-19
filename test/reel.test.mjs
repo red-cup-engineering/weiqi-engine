@@ -11,13 +11,13 @@ const recorded = [
     { type: "group-killed", detail: { groupSize: 2 } },
   ] },
   { version: 4, command: { kind: "pass" }, events: [{ type: "pass" }] },
-  { version: 5, command: { kind: "pass" }, events: [{ type: "game-ended" }] },
+  { version: 5, command: { kind: "pass" }, events: [{ type: "counting-opened", detail: { trigger: "two-consecutive-passes" } }] },
 ];
 
 test("director preserves chronology while selecting real semantic match moments", () => {
   const reel = planReplayMoments(recorded);
   assert.deepEqual(reel.map(beat => beat.version), [0, 2, 3, 5]);
-  assert.deepEqual(reel.map(beat => beat.kind), ["opening", "atari-given", "capture", "game-ended"]);
+  assert.deepEqual(reel.map(beat => beat.kind), ["opening", "atari-given", "capture", "counting-opened"]);
   assert.equal(reel[2].title, "2 stones captured");
   assert.equal(reel[2].cue, "impact");
   assert.equal(recorded[3].events[0].detail.stonesCaptured, 2);
@@ -50,4 +50,19 @@ test("corrupt versions and nonsensical limits refuse before presenting a replay"
   for (const limit of [0, 1, 31, 2.1, NaN]) {
     assert.throws(() => planReplayMoments(recorded, { limit }), /limit/);
   }
+});
+
+
+test("counting only opens score negotiation, while admitted settlement is the finale", () => {
+  const complete = [...recorded, {
+    version: 6, command: { kind: "settle", dead: [] }, events: [],
+  }];
+  const scenes = planReplayMoments(complete, { limit: 6 });
+  const count = scenes.find((moment) => moment.kind === "counting-opened");
+  assert.ok(count, "two passes should remain visible as a transition");
+  assert.equal(count.cue, "tick");
+  assert.ok(count.impact < scenes.at(-1).impact);
+  assert.equal(scenes.at(-1).kind, "settlement");
+  assert.equal(scenes.at(-1).title, "Count agreed");
+  assert.equal(scenes.at(-1).cue, "chime", "only the actual admitted settlement receives a terminal cue");
 });
