@@ -251,8 +251,11 @@ export function countPosition(game, deadPoints = []) {
   // The old path flood-filled territory twice: once within scoreArea/
   // scoreTerritory, then again for the ownership projection.
   const territory = computeTerritory(position);
-  const score = mode === "territory"
+  // This is the single rules-owned score boundary for both provisional
+  // counts and accepted game results. Session snapshots expose this object;
+  // its values must not be writable after a command has been admitted.
+  const score = Object.freeze(mode === "territory"
     ? scoreTerritory(position, game.ruleset, territory)
-    : scoreArea(position, game.ruleset, territory);
+    : scoreArea(position, game.ruleset, territory));
   return Object.freeze({ mode, position, score, ownership: territory.ownership });
 }
