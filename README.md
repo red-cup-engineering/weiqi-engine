@@ -75,6 +75,10 @@ Everything re-exports from `src/index.mjs`:
   `src/index.mjs` for playouts on a mutable Game. It returns the engine's
   ruleset-selected score, mode, settled position and ownership together,
   rather than letting consumers guess whether area or territory applies.
+  The shared `countPosition` scorer freezes its accepted numeric score receipt,
+  so provisional scoring and settlement snapshots cannot be altered through
+  a nested `result.score` reference. This is pure Go domain behavior, not
+  a second validator or an identity/authorization claim.
 - **`scoring.mjs`** — `computeTerritory` (seki-aware flood fill; returns the two counts plus a
   per-point `ownership` map in the board's own layout), `removeDeadStones`, `scoreArea`,
   `scoreTerritory`. `countPosition` computes territory once and reuses its
