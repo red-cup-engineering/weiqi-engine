@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BLACK, EMPTY, WHITE, coordToPoint } from "../src/board.mjs";
 import { computeTerritory } from "../src/scoring.mjs";
-import { admitWeiqiGameCommand, createWeiqiGameSession, materializeWeiqiGame, scoreWeiqiSession } from "../src/session.mjs";
+import { admitWeiqiGameCommand, createWeiqiGameSession, materializeWeiqiGame, scoreWeiqiSession, weiqiSessionToSgfRecord } from "../src/session.mjs";
 import { walledSession } from "./helpers/session-fixtures.mjs";
 
 // Walled positions come from the shared upstream test-only session fixture.
@@ -177,4 +177,44 @@ test("accepted and provisional scores cannot be rewritten after being read", () 
     assert.equal(Object.isFrozen(fromHistory), true, ruleset + " replayed score is immutable");
     assert.equal(fromHistory.blackScore, original);
   }
+});
+
+
+test("handicap settlement, provisional count, and SGF use the same ruleset-specific nominal komi", () => {
+  const cases = [
+    ["japanese", "territory", 0, 0],
+    ["chinese", "area", -2, 2],
+    ["aga", "area", 0, 3],
+    ["newzealand", "area", 0, 0],
+    ["ing", "area", 0, 0],
+  ];
+  for (const [ruleset, mode, blackAdjustment, whiteAdjustment] of cases) {
+    const opening = createWeiqiGameSession({ size: 9, ruleset, handicap: 4 });
+    assert.equal(opening.state.toMove, WHITE);
+    assert.equal(opening.state.handicap.length, 4);
+    const counted = scoreWeiqiSession(opening);
+    const score = counted.score;
+    assert.equal(counted.mode, mode);
+    assert.equal(score.komi, 0.5);
+    assert.equal(score.handicap, 4);
+    assert.equal(score.blackHandicapAdjustment, blackAdjustment);
+    assert.equal(score.whiteHandicapAdjustment, whiteAdjustment);
+    assert.equal(score.blackScore, mode === "area" ? 81 + blackAdjustment : 77,
+      "no White stones: all empty points belong to the four Black hoshi");
+    assert.equal(score.whiteScore, 0.5 + whiteAdjustment);
+    assert.equal(Object.isFrozen(score), true);
+
+    const counting = createWeiqiGameSession(opening.config, [{ kind: "pass" }, { kind: "pass" }]);
+    const settled = admitWeiqiGameCommand(counting, counting.version, { kind: "settle", dead: [] });
+    assert.equal(settled.ok, true);
+    if (!settled.ok) continue;
+    assert.deepEqual(settled.session.state.result.score, score,
+      "the final result must equal the earlier rules-owned position count");
+    const sgfRecord = weiqiSessionToSgfRecord(settled.session);
+    assert.equal(sgfRecord.komi, 0.5, "SGF must export actual handicap komi, not even-game komi");
+    assert.equal(sgfRecord.handicap.length, 4);
+  }
+  // The exact same ruleset still retains even-game compensation without a handicap.
+  assert.equal(scoreWeiqiSession(createWeiqiGameSession({size: 9, ruleset: "japanese"})).score.whiteScore, 6.5);
+  assert.equal(scoreWeiqiSession(createWeiqiGameSession({size: 9, ruleset: "chinese"})).score.whiteScore, 7.5);
 });
