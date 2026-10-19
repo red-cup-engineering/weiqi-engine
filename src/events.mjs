@@ -229,16 +229,17 @@ export function annotateMove(input) {
 
 /**
  * Annotate a pass — the other kind of turn, which places no stone and so
- * has no board to diff. `endsMainPhase` is true exactly when this pass is
- * the second of two consecutive passes (per pass.md/R12: "two consecutive
- * passes... end the main phase of play"), i.e. the caller's own
- * passStreak has just reached 2; Game decides that, since it is the one
- * tracking the streak across turns.
+ * has no board to diff. `opensCounting` is true on the second of two
+ * consecutive passes. This opens disputed dead-stone settlement but cannot
+ * announce a winner; that requires an accepted settle or resign command.
+ * The event remains linked to Science's pass.md.
  */
-export function annotatePass(color, endsMainPhase) {
+export function annotatePass(color, opensCounting) {
   const events = [mkEvent("pass", "pass", { color })];
-  if (endsMainPhase) {
-    events.push(mkEvent("game-ended", "pass", { color, trigger: "two-consecutive-passes" }));
+  if (opensCounting) {
+    events.push(mkEvent("counting-opened", "pass", {
+      color, trigger: "two-consecutive-passes",
+    }));
   }
   return events;
 }
