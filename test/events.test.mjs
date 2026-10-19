@@ -34,7 +34,7 @@ test("every event carries a termRef matching TERM_PATH[term] (the field a UI hov
   }
 });
 
-test("annotatePass fires a pass event every time, and a game-ended event only when endsMainPhase is true", () => {
+test("annotatePass names counting opening rather than a terminal game", () => {
   const quiet = annotatePass(BLACK, false);
   assert.deepEqual(quiet.map((e) => e.type), ["pass"]);
   assert.equal(quiet[0].term, "pass");
@@ -42,7 +42,8 @@ test("annotatePass fires a pass event every time, and a game-ended event only wh
   assert.equal(quiet[0].detail.color, BLACK);
 
   const ending = annotatePass(WHITE, true);
-  assert.deepEqual(ending.map((e) => e.type), ["pass", "game-ended"]);
+  assert.deepEqual(ending.map((e) => e.type), ["pass", "counting-opened"]);
+  assert.equal(ending[1].detail.trigger, "two-consecutive-passes");
   assert.equal(ending[1].term, "pass");
   assert.equal(ending[1].termRef, TERM_PATH.pass);
   assert.equal(ending[1].detail.color, WHITE);
