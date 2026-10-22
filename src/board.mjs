@@ -116,7 +116,10 @@ export function findGroup(board, width, height, start) {
  *
  * Fixed-position observation only: NOT ko-qualified legal moves, ownership,
  * entanglement entropy, a Crofton geodesic measure, or a strategy score.
- * Only contacts with EMPTY endpoints are liberties. The FULL unit-edge cut\n * delta(group) ALSO includes opponent-stone contacts; the static boundary\n * cut is not automatically a minimum s–t cut or a physical bit-thread flow.\n * Coordinates refer to this source board's row-major points.
+ * Only contacts with EMPTY endpoints are liberties. The FULL unit-edge cut
+ * delta(group) ALSO includes opponent-stone contacts; the static boundary
+ * cut is not automatically a minimum s–t cut or a physical bit-thread flow.
+ * Coordinates refer to this source board's row-major points.
  */
 export function findGroupBoundaryIncidence(board, width, height, start) {
   const group = findGroup(board, width, height, start);
