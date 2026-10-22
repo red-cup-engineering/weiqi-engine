@@ -169,3 +169,18 @@ test("valid rectangular positions retain their exact stone cells and hashes", ()
   assert.equal(pos.capturedWhiteStones,3);
   assert.equal(createEmptyPosition(3,2).board.length,6);
 });
+
+
+test("passing preserves the board values without sharing mutable historical storage", () => {
+  const before=createPositionFromCells(2,2,[BLACK,EMPTY,WHITE,EMPTY],BLACK);
+  const after=applyPass(before);
+  assert.deepEqual(after.board,before.board);
+  assert.notEqual(after.board,before.board);
+  const originalHash=before.boardHash;
+  after.board[0]=EMPTY;
+  assert.equal(before.board[0],BLACK);
+  assert.equal(before.boardHash,originalHash);
+  assert.equal(before.boardHash,boardHash(before.board));
+  // Note: consumers can still mutate their own Uint8Array. The kernel
+  // protects history separation, not arbitrary external writes to one state.
+});
