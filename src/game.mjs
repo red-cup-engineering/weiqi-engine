@@ -65,6 +65,12 @@ function checkKoViolation(history, candidate, regime) {
   return null;
 }
 
+/** One candidate placement in the current FULL history, including ko. */
+function legalPlacementAt(game, point) {
+  const placed = applyStonePlacement(game.current, point, game.ruleset);
+  return placed.ok && checkKoViolation(game.history, placed.position, game.ruleset.ko_regime) === null;
+}
+
 export class Game {
   /** Square board side length (see isBoardSize in board.mts for the accepted range). */
  size;
@@ -224,6 +230,25 @@ export class Game {
     return { ok: true, events: [], passStreak: this.passStreak };
   }
 
+  /**
+   * Exact current position-and-history-indexed legal-PLACEMENT frontier.
+   * Distinct from the static liberties of any one group: ko, suicide,
+   * captures, turn, ruleset and terminal status are checked by the original
+   * Game legality path. Pass is legal separately, never a board point.
+   * This is an observation of options, not a strategy or a move.
+   */
+  legalPlacementFrontier() {
+    if (this.result !== null) return [];
+    const { board, width } = this.current;
+    const frontier = [];
+    for (let point = 0; point < board.length; point++) {
+      if (board[point] === 0 && legalPlacementAt(this, point)) {
+        frontier.push(pointToCoord(width, point));
+      }
+    }
+    return frontier;
+  }
+
   /** Whether `move` would currently be legal, without mutating game state. */
   isLegal(move) {
     if (this.result !== null) return false;
@@ -234,9 +259,7 @@ export class Game {
     } catch {
       return false;
     }
-    const placement = applyStonePlacement(this.current, point, this.ruleset);
-    if (!placement.ok) return false;
-    return checkKoViolation(this.history, placement.position, this.ruleset.ko_regime) === null;
+    return legalPlacementAt(this, point);
   }
 }
 
