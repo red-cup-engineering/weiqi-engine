@@ -14,6 +14,7 @@ import {
   findGroup,
   neighbors,
   opponent,
+  isBoardSize,
 
 } from "./board.mjs";
 import { boardHash, situationalHash } from "./zobrist.mjs";
@@ -38,7 +39,21 @@ function finalize(
   };
 }
 
+/** Reject malformed positions BEFORE hashing, cloning, or game history.
+ * A nonstone byte otherwise hashes as if it were empty while blocking moves. */
+function checkGeometryAndTurn(width, height, toMove) {
+  if (!isBoardSize(width) || !isBoardSize(height))
+    throw new RangeError("position dimensions must be integer widths/heights from 1 to 19");
+  if (toMove !== BLACK && toMove !== WHITE)
+    throw new TypeError("side to move must be BLACK or WHITE");
+}
+function checkPrisonerCount(n) {
+  if (!Number.isSafeInteger(n) || n < 0)
+    throw new RangeError("captured stone count must be a nonnegative safe integer");
+}
+
 export function createEmptyPosition(width, height = width, toMove = BLACK) {
+  checkGeometryAndTurn(width, height, toMove);
   return finalize(width, height, createEmptyBoard(width, height), toMove, 0, 0);
 }
 
@@ -55,8 +70,18 @@ export function createPositionFromCells(
   capturedBlackStones = 0,
   capturedWhiteStones = 0,
 ) {
-  if (cells.length !== width * height) {
-    throw new Error(`Expected ${width * height} cells, got ${cells.length}`);
+  checkGeometryAndTurn(width, height, toMove);
+  checkPrisonerCount(capturedBlackStones);
+  checkPrisonerCount(capturedWhiteStones);
+  if (cells == null || cells.length !== width * height) {
+    throw new Error(`Expected ${width * height} cells, got ${cells?.length ?? "missing"}`);
+  }
+  // Validate ORIGINAL values before Uint8Array coercion: -1 otherwise
+  // becomes 255, 257 becomes 1, and a fractional stone can be truncated.
+  for (let point = 0; point < cells.length; point++) {
+    const stone = cells[point];
+    if (stone !== EMPTY && stone !== BLACK && stone !== WHITE)
+      throw new TypeError(`Invalid stone at point ${point}: only EMPTY, BLACK, WHITE permitted`);
   }
   const board = Uint8Array.from(cells);
   return finalize(width, height, board, toMove, capturedBlackStones, capturedWhiteStones);
