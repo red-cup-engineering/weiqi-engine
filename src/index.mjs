@@ -1,6 +1,7 @@
 // Public entry point for @red-cup-engineering/weiqi-engine.
 
 export * from "./board.mjs";
+export * from "./flow-certificate.mjs";
 export * from "./zobrist.mjs";
 export * from "./position.mjs";
 export * from "./rulesets.mjs";
