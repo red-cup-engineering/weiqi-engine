@@ -124,3 +124,52 @@ test("bulk endpoints are visible but refused by the classical conservation certi
   // This is a refusal to confuse a finite bulk endpoint with a
   // static source-sink-only flow, NOT a derived quantum bit-thread law.
 });
+
+
+test("all ordered terminal pairs on 3x2 attain finite max-flow=min-cut independently",()=>{
+  const edges=[];
+  for(let a=0;a<6;a++)
+    for(const b of neighbors(3,2,a))if(a<b)edges.push({a,b});
+  edges.sort((x,y)=>x.a-y.a||x.b-y.b);
+  assert.equal(edges.length,7);
+  const candidates=[];
+  for(let code=0;code<3**edges.length;code++){
+    let k=code;
+    const flowEdges=edges.map(({a,b})=>{
+      const flow=k%3-1;k=Math.floor(k/3);return {a,b,flow};
+    });
+    // Independent oracle: signed incidence, without calling the verifier.
+    const div=Array(6).fill(0);
+    for(const {a,b,flow} of flowEdges){div[a]+=flow;div[b]-=flow}
+    candidates.push({flowEdges,div});
+  }
+  let pairs=0;
+  for(let source=0;source<6;source++)for(let sink=0;sink<6;sink++){
+    if(source===sink)continue;
+    const cuts=[];
+    for(let mask=0;mask<64;mask++){
+      if(!(mask&(1<<source))||(mask&(1<<sink)))continue;
+      const side=Array.from({length:6},(_,i)=>i).filter(i=>mask&(1<<i));
+      // Another independent oracle: direct source-side crossing count.
+      const inSide=new Set(side);
+      const capacity=edges.filter(({a,b})=>inSide.has(a)!==inSide.has(b)).length;
+      cuts.push({side,capacity});
+    }
+    cuts.sort((a,b)=>a.capacity-b.capacity||a.side.length-b.side.length);
+    let max=-1,witness=null;
+    for(const {flowEdges,div} of candidates){
+      const value=div[source];
+      if(value<0||div[sink]!==-value||
+          div.some((d,i)=>i!==source&&i!==sink&&d!==0))continue;
+      if(value>max){max=value;witness=flowEdges}
+    }
+    assert.equal(max,cuts[0].capacity,"exhaustive primal/dual optimum for "+source+":"+sink);
+    const received=verifyUnitGridFlowCutOf(3,2,{
+      source,sink,sourceSide:cuts[0].side,flowEdges:witness,
+    });
+    assert.equal(received.optimal,true);
+    assert.equal(received.flowValue,max);
+    pairs++;
+  }
+  assert.equal(pairs,30);
+});
