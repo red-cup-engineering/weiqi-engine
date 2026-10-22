@@ -71,3 +71,29 @@ test("terminal games have no stone placements, independently of remaining empty 
   assert.deepEqual(candidateMoveCoords(game, kernel), []);
   assert.equal(game.isLegal("pass"), false);
 });
+
+
+test("New Zealand legal self-capture falsifies universal occupied-next-root admission", () => {
+  // Fixed position: a black center stone has exactly one liberty D3.
+  // The surrounding white stones still have other liberties, so the
+  // selected move captures NO opponent. It self-captures both black stones.
+  const cells=Array(25).fill(EMPTY);
+  cells[12]=BLACK;
+  for (const p of [7,11,17,8,14,18]) cells[p]=WHITE;
+  const source=createPositionFromCells(5,5,cells,BLACK);
+  const game=new Game(5,"newzealand",source);
+  assert.equal(game.ruleset.ko_regime,"positional_superko");
+  assert.equal(game.ruleset.suicide,"legal");
+  assert.equal(game.isLegal("D3"),true);
+  const result=game.play("D3");
+  assert.equal(result.ok,true);
+  assert.equal(game.current.board[12],EMPTY);
+  assert.equal(game.current.board[13],EMPTY);
+  assert.deepEqual(Array.from(game.current.board).filter(v=>v===BLACK),[]);
+  assert.equal(game.history.length,2);
+  assert.equal(result.events.some(event=>event.type==="capture"
+    && event.detail?.selfCapture===true),true);
+  // Lean's current Admission.PlacementMatches requires the played point to
+  // remain occupied. That is lawful ONLY for its documented no-suicide
+  // positional fragment, not an iff/necessity theorem for every ruleset.
+});
