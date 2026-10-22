@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BLACK, EMPTY, findGroupBoundaryIncidence, neighbors } from "../src/board.mjs";
-import { unitGridCutCapacityOf, verifyUnitGridFlowCutOf } from "../src/flow-certificate.mjs";
+import { unitGridCutCapacityOf, unitGridDivergenceReceiptOf, verifyUnitGridFlowCutOf } from "../src/flow-certificate.mjs";
 
 const optimal2x2={
   source:0,sink:3,sourceSide:[0,1,2],
@@ -78,4 +78,49 @@ test("all 3^7 signed grid flows on 3x2 obey weak duality if admitted",()=>{
   }
   assert.equal(admitted,12);
   assert.equal(rejected,2175);
+});
+
+
+test("original-grid divergence theorem holds on all 2,187 flows and all 64 source-side cuts",()=>{
+  const width=3,height=2,edges=[];
+  for(let a=0;a<width*height;a++)
+    for(const b of neighbors(width,height,a))
+      if(a<b)edges.push({a,b});
+  edges.sort((a,b)=>a.a-b.a||a.b-b.b);
+  assert.equal(edges.length,7);
+  let receipts=0;
+  for(let code=0;code<3**edges.length;code++){
+    let n=code;
+    const flowEdges=edges.map(({a,b})=>{
+      const flow=n%3-1;n=Math.floor(n/3);return {a,b,flow};
+    });
+    for(let mask=0;mask<1<<(width*height);mask++){
+      const sourceSide=Array.from({length:width*height},(_,i)=>i)
+        .filter(i=>mask&(1<<i));
+      const receipt=unitGridDivergenceReceiptOf(width,height,{sourceSide,flowEdges});
+      assert.equal(receipt.kind,"weiqi.originalGridDivergenceIdentity.v1");
+      assert.equal(receipt.totalDivergence,0);
+      assert.equal(receipt.cutFlux,receipt.sourceSideDivergence);
+      receipts++;
+    }
+  }
+  assert.equal(receipts,139968);
+});
+
+test("bulk endpoints are visible but refused by the classical conservation certificate",()=>{
+  const flowEdges=[
+    {a:0,b:1,flow:1},{a:0,b:2,flow:0},
+    {a:1,b:3,flow:0},{a:2,b:3,flow:0},
+  ];
+  const receipt=unitGridDivergenceReceiptOf(2,2,{sourceSide:[0],flowEdges});
+  assert.deepEqual(receipt.divergence,[1,-1,0,0]);
+  assert.deepEqual(receipt.nonzeroDivergencePointIndices,[0,1]);
+  assert.equal(receipt.cutFlux,1);
+  assert.equal(receipt.sourceSideDivergence,1);
+  assert.equal(receipt.physics,"not-a-quantum-covariant-bulk-endpoint-entropy");
+  assert.throws(()=>verifyUnitGridFlowCutOf(2,2,{
+    source:0,sink:3,sourceSide:[0,1,2],flowEdges,
+  }),/internal conservation or terminal direction/);
+  // This is a refusal to confuse a finite bulk endpoint with a
+  // static source-sink-only flow, NOT a derived quantum bit-thread law.
 });
