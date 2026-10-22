@@ -28,19 +28,6 @@
 //
 
 /**
- * Every empty point's Go-notation coordinate on `game`'s board, in
- * row-major order.
- */
-function emptyPointCoords(game, kernel) {
-  const { board, width } = game.current;
-  const coords = [];
-  for (let point = 0; point < board.length; point++) {
-    if (board[point] === kernel.EMPTY) coords.push(kernel.pointToCoord(width, point));
-  }
-  return coords;
-}
-
-/**
  * How many stones a legal move at `coord` would capture, without mutating
  * `game` -- a non-mutating preview built from the kernel's own pure
  * `applyStonePlacement` (public API), exactly as a UI's hover-ghost-stone
@@ -94,8 +81,8 @@ export function isSelfHarmingMove(game, kernel, coord) {
  * adjudication: after a pass the player can still fight for an unowned point.
  */
 export function candidateMoveCoords(game, kernel) {
-  const useful = emptyPointCoords(game, kernel).filter(
-    (coord) => game.isLegal(coord) && !isSelfHarmingMove(game, kernel, coord),
+  const useful = game.legalPlacementFrontier().filter(
+    (coord) => !isSelfHarmingMove(game, kernel, coord),
   );
   if (game.passStreak === 0) return useful;
 
