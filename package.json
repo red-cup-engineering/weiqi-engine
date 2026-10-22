@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/red-cup-engineering/weiqi-engine.git"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "main": "./src/index.mjs",
   "exports": {
     ".": "./src/index.mjs",
@@ -37,5 +37,9 @@
     "test:properties": "node --test test/properties.test.mjs",
     "test:browser": "node --test test/browser-build.test.mjs"
   },
-  "private": false
+  "private": false,
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
+  }
 }
