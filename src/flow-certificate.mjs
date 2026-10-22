@@ -122,11 +122,11 @@ export function verifyUnitGridFlowCutOf(width,height,{
   const {size}=grid(width,height);
   point(source,size);point(sink,size);
   if(source===sink)throw new TypeError("flow source and sink must differ");
-  const cut=unitGridCutCapacityOf(width,height,sourceSide);
+  const raw=unitGridDivergenceReceiptOf(width,height,{sourceSide,flowEdges});
+  const cut=raw.cut; // Reuse the independently checked cut, do not enumerate twice.
   const side=new Set(cut.sourceSide);
   if(!side.has(source)||side.has(sink))
     throw new TypeError("cut must contain source and exclude sink");
-  const raw=unitGridDivergenceReceiptOf(width,height,{sourceSide,flowEdges});
   const divergence=raw.divergence;
   const cutFlux=raw.cutFlux;
   const value=divergence[source];
