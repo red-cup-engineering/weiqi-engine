@@ -2,7 +2,7 @@
 // ko/superko, which Position alone cannot check) and drives the semantic
 // event annotator.
 
-import { BLACK, WHITE, coordToPoint, isBoardSize, opponent, pointToCoord } from "./board.mjs";
+import { BLACK, WHITE, coordToPoint, findGroupBoundaryIncidence, isBoardSize, opponent, pointToCoord } from "./board.mjs";
 import { applyPass, applyStonePlacement, createEmptyPosition } from "./position.mjs";
 import { getRuleset, handicapPoints } from "./rulesets.mjs";
 import { annotateMove, annotatePass } from "./events.mjs";
@@ -228,6 +228,18 @@ export class Game {
       score: counted.score,
     });
     return { ok: true, events: [], passStreak: this.passStreak };
+  }
+
+  /**
+   * Observe a single OCCUPIED group's stone-to-empty adjacency witnesses.
+   * This is the fixed-position contact fiber, not the rules-and-history-
+   * qualified legalPlacementFrontier or a territory/entropy valuation.
+   * Reading does not advance the Game, its clock, or its history.
+   */
+  groupBoundaryIncidenceAt(coord) {
+    const { board, width, height } = this.current;
+    const point = coordToPoint(width, height, coord);
+    return findGroupBoundaryIncidence(board, width, height, point);
   }
 
   /**
