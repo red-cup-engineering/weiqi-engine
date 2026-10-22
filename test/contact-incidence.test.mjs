@@ -68,6 +68,19 @@ test("contact fibers exactly project onto native liberties on all 3^6 boards", (
         .sort((a, b) => a.endpoint - b.endpoint || a.stone - b.stone);
       const expectedLiberties = [...native.liberties].sort((a, b) => a - b);
       assert.deepEqual(readout.contacts, expectedContacts);
+      const members = new Set(native.stones);
+      const expectedFullBoundary = native.stones.flatMap(stone =>
+        neighbors(width, height, stone)
+          .filter(endpoint => !members.has(endpoint))
+          .map(endpoint => ({stone, endpoint,
+            exteriorKind:cells[endpoint] === EMPTY ? "liberty" : "opposition"})))
+        .sort((a,b)=>a.endpoint-b.endpoint||a.stone-b.stone);
+      assert.deepEqual(readout.edgeBoundaryContacts, expectedFullBoundary);
+      assert.equal(readout.unitCutCapacity, expectedFullBoundary.length);
+      assert.equal(readout.libertiesAreFullCutBoundary,
+        !expectedFullBoundary.some(c=>c.exteriorKind === "opposition"));
+      assert.equal(readout.oppositionContacts.length,
+        expectedFullBoundary.filter(c=>c.exteriorKind === "opposition").length);
       assert.deepEqual(readout.liberties, expectedLiberties);
       assert.deepEqual([...new Set(readout.contacts.map(c => c.endpoint))],
         expectedLiberties, "support must be precisely qi, not multiset");
@@ -99,4 +112,28 @@ test("Game exposes source-specific contact witnesses without mutating history", 
   assert.equal(game.moveEvents.length, events);
   assert.throws(() => game.groupBoundaryIncidenceAt("B2"));
   assert.throws(() => game.groupBoundaryIncidenceAt("Z9"));
+});
+
+test("opponent edges are part of the FULL cut but not qi/liberty contacts", () => {
+  const cells=Uint8Array.from([BLACK,BLACK,EMPTY,BLACK,WHITE,EMPTY]);
+  const measured=findGroupBoundaryIncidence(cells,3,2,0);
+  assert.deepEqual(measured.stones,[0,1,3]);
+  assert.deepEqual(measured.liberties,[2]);
+  assert.deepEqual(measured.contacts,[{stone:1,endpoint:2}]);
+  assert.deepEqual(measured.oppositionContacts,[
+    {stone:1,endpoint:4,color:WHITE},
+    {stone:3,endpoint:4,color:WHITE},
+  ]);
+  assert.deepEqual(measured.edgeBoundaryContacts,[
+    {stone:1,endpoint:2,exteriorKind:"liberty"},
+    {stone:1,endpoint:4,exteriorKind:"opposition"},
+    {stone:3,endpoint:4,exteriorKind:"opposition"},
+  ]);
+  assert.equal(measured.unitCutCapacity,3);
+  assert.equal(measured.contacts.length,1);
+  assert.equal(measured.libertiesAreFullCutBoundary,false);
+  // Injectivity of the qi endpoint map DOES NOT say the qi frontier equals
+  // the full cut: this group has unique qi contact, but 2 opponent contacts.
+  assert.equal(measured.endpointInjective,true);
+  assert.ok(Object.isFrozen(measured.edgeBoundaryContacts));
 });
