@@ -161,7 +161,10 @@ export function applyPass(position) {
   return finalize(
     position.width,
     position.height,
-    position.board,
+    // Preserve distinct history snapshots even when a pass changes no stones.
+    // The Uint8Array is writable by consumers; aliasing would allow one
+    // position's board edits to corrupt another position's stored history.
+    position.board.slice(),
     opponent(position.toMove),
     position.capturedBlackStones,
     position.capturedWhiteStones,
