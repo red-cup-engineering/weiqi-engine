@@ -23,22 +23,10 @@
 // .mjs sources (Node, via the upstream package) and
 // against generated browser .mjs modules (public/js/kernel/*.mjs,
 // see public/js/play-app.mjs), without duplicating a single line of rules
-// logic. All legality is delegated to `game.isLegal` / `game.play`; this
-// module only *chooses* among moves the kernel has already certified legal.
+// logic. All legality is delegated to the engine's exact historical
+// `Game.legalPlacementFrontier` / `Game.play`; this module only *chooses*
+// among moves the engine has already certified legal.
 //
-
-/**
- * Every empty point's Go-notation coordinate on `game`'s board, in
- * row-major order.
- */
-function emptyPointCoords(game, kernel) {
-  const { board, width } = game.current;
-  const coords = [];
-  for (let point = 0; point < board.length; point++) {
-    if (board[point] === kernel.EMPTY) coords.push(kernel.pointToCoord(width, point));
-  }
-  return coords;
-}
 
 /**
  * How many stones a legal move at `coord` would capture, without mutating
@@ -94,8 +82,8 @@ export function isSelfHarmingMove(game, kernel, coord) {
  * adjudication: after a pass the player can still fight for an unowned point.
  */
 export function candidateMoveCoords(game, kernel) {
-  const useful = emptyPointCoords(game, kernel).filter(
-    (coord) => game.isLegal(coord) && !isSelfHarmingMove(game, kernel, coord),
+  const useful = game.legalPlacementFrontier().filter(
+    (coord) => !isSelfHarmingMove(game, kernel, coord),
   );
   if (game.passStreak === 0) return useful;
 
