@@ -32,7 +32,7 @@ test("a static liberty is not necessarily a legal continuation: simple ko is his
   const rows = [
     ". . . . .", ". . X . .", ". X O X .", ". O . O .", ". . O . .",
   ];
-  const cells = rows.join(" ").split(/\\s+/).map(char => char === "X" ? BLACK : char === "O" ? WHITE : EMPTY);
+  const cells = rows.join(" ").split(" ").map(char => char === "X" ? BLACK : char === "O" ? WHITE : EMPTY);
   const position = createPositionFromCells(5, 5, cells, BLACK);
   const game = new Game(5, "japanese", position);
   assert.equal(game.play("C4").ok, true);
