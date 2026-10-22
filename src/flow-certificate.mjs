@@ -55,21 +55,21 @@ export function unitGridCutCapacityOf(width,height,sourceSide) {
 }
 
 /**
- * Check a producer-supplied flow and cut; do NOT search for a flow.
- * Values on canonical low->high edges are signed integers -1,0,1.
- * Every original grid edge must be present exactly once.
- * An invalid certificate refuses before returning any claimed dual bound.
+ * Discrete divergence theorem on the original board grid.
+ * For ANY signed unit-bounded edge assignment (not necessarily conserved),
+ * sum_{p in S} div(p) equals oriented net flux across delta(S).
+ * This is the exact reason classical source/sink-only flow certificates
+ * cannot silently admit extra bulk sources/sinks.
+ *
+ * Nonzero interior divergence is merely a finite graph endpoint observation,
+ * NOT a bulk quantum entropy, covariant V-flow/U-flow or gravitational dual.
  */
-export function verifyUnitGridFlowCutOf(width,height,{
-  source,sink,sourceSide,flowEdges,
+export function unitGridDivergenceReceiptOf(width,height,{
+  sourceSide,flowEdges,
 }={}) {
   const {size,edges}=grid(width,height);
-  point(source,size);point(sink,size);
-  if(source===sink)throw new TypeError("flow source and sink must differ");
   const cut=unitGridCutCapacityOf(width,height,sourceSide);
   const side=new Set(cut.sourceSide);
-  if(!side.has(source)||side.has(sink))
-    throw new TypeError("cut must contain source and exclude sink");
   if(!Array.isArray(flowEdges)||flowEdges.length!==edges.length)
     throw new TypeError("flow certificate requires every original grid edge");
   const allowed=new Set(edges.map(({a,b})=>a+":"+b));
@@ -91,12 +91,48 @@ export function verifyUnitGridFlowCutOf(width,height,{
     divergence[a]+=flow;
     divergence[b]-=flow;
   }
+  const sumAllDivergence=divergence.reduce((sum,x)=>sum+x,0);
+  const sumInsideDivergence=cut.sourceSide.reduce((sum,p)=>sum+divergence[p],0);
+  const cutFlux=cut.crossingEdges.reduce((sum,{a,b})=>
+    sum+(side.has(a)?indexed.get(a+":"+b):-indexed.get(a+":"+b)),0);
+  if(sumAllDivergence!==0||cutFlux!==sumInsideDivergence)
+    throw new Error("original grid divergence/flux conservation identity violated");
+  return Object.freeze({
+    kind:"weiqi.originalGridDivergenceIdentity.v1",
+    cut,
+    divergence:Object.freeze(divergence),
+    nonzeroDivergencePointIndices:Object.freeze(
+      divergence.flatMap((value,p)=>value!==0?[p]:[])),
+    cutFlux,sourceSideDivergence:sumInsideDivergence,
+    totalDivergence:sumAllDivergence,
+    status:"finite-signed-grid-identity-only",
+    physics:"not-a-quantum-covariant-bulk-endpoint-entropy",
+  });
+}
+
+/**
+ * Check a producer-supplied flow and cut; do NOT search for a flow.
+ * Values on canonical low->high edges are signed integers -1,0,1.
+ * Every original grid edge must be present exactly once.
+ * An invalid certificate refuses before returning any claimed dual bound.
+ */
+export function verifyUnitGridFlowCutOf(width,height,{
+  source,sink,sourceSide,flowEdges,
+}={}) {
+  const {size}=grid(width,height);
+  point(source,size);point(sink,size);
+  if(source===sink)throw new TypeError("flow source and sink must differ");
+  const cut=unitGridCutCapacityOf(width,height,sourceSide);
+  const side=new Set(cut.sourceSide);
+  if(!side.has(source)||side.has(sink))
+    throw new TypeError("cut must contain source and exclude sink");
+  const raw=unitGridDivergenceReceiptOf(width,height,{sourceSide,flowEdges});
+  const divergence=raw.divergence;
+  const cutFlux=raw.cutFlux;
   const value=divergence[source];
   if(value<0||divergence[sink]!==-value ||
       divergence.some((x,v)=>v!==source&&v!==sink&&x!==0))
     throw new TypeError("flow violates internal conservation or terminal direction");
-  const cutFlux=cut.crossingEdges.reduce((sum,{a,b})=>
-    sum+(side.has(a)?indexed.get(a+":"+b):-indexed.get(a+":"+b)),0);
   if(cutFlux!==value||value>cut.capacity)
     throw new Error("feasible flow violates finite cut weak duality");
   return Object.freeze({
@@ -105,7 +141,7 @@ export function verifyUnitGridFlowCutOf(width,height,{
     cutCapacity:cut.capacity,cutFlux,
     optimal:value===cut.capacity,
     status:value===cut.capacity?"dual-optimality-certified":"feasible-lower-upper-bounds-only",
-    divergence:Object.freeze(divergence),
+    divergence,divergenceReceipt:raw,
     cut,
     gridSemantics:"all-points-unit-edges; independent-of-stones-and-Go-history",
     physics:"not-an-RT-or-quantum-bit-thread-certificate",
