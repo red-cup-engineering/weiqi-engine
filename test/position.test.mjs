@@ -125,3 +125,47 @@ test("pass flips toMove, leaves the board and hashes' board-component unchanged"
 test("createPositionFromCells rejects a mismatched cell count", () => {
   assert.throws(() => createPositionFromCells(9, 9, [BLACK, WHITE], BLACK));
 });
+
+
+test("position loader refuses non-stone bytes before coercion or Zobrist hashing", () => {
+  const base=[BLACK,EMPTY,WHITE,EMPTY];
+  for(const invalid of [3,255,257,-1,0.5,"1",null,undefined,NaN]) {
+    const cells=[...base];
+    cells[2]=invalid;
+    assert.throws(()=>createPositionFromCells(2,2,cells,BLACK),
+      /Invalid stone at point 2/);
+  }
+  const missing=[BLACK,EMPTY,,EMPTY];
+  assert.throws(()=>createPositionFromCells(2,2,missing,BLACK),
+    /Invalid stone at point 2/);
+});
+
+test("position source rejects malformed turn, dimensions and prisoner counts", () => {
+  const cells=[BLACK,EMPTY,WHITE,EMPTY];
+  for(const toMove of [EMPTY,3,-1,NaN]) {
+    assert.throws(()=>createPositionFromCells(2,2,cells,toMove),/side to move/);
+  }
+  for(const shape of [[0,2],[20,2],[2.5,2],[2,Infinity],[2,0]]) {
+    assert.throws(()=>createPositionFromCells(shape[0],shape[1],cells),
+      /position dimensions/);
+  }
+  for(const invalid of [-1,1.5,Infinity,NaN]) {
+    assert.throws(()=>createPositionFromCells(2,2,cells,BLACK,invalid,0),
+      /captured stone count/);
+    assert.throws(()=>createPositionFromCells(2,2,cells,BLACK,0,invalid),
+      /captured stone count/);
+  }
+  assert.throws(()=>createEmptyPosition(20),/position dimensions/);
+  assert.throws(()=>createEmptyPosition(2,2,EMPTY),/side to move/);
+});
+
+test("valid rectangular positions retain their exact stone cells and hashes", () => {
+  const cells=[BLACK,EMPTY,WHITE,EMPTY,BLACK,WHITE];
+  const pos=createPositionFromCells(3,2,cells,WHITE,4,3);
+  assert.deepEqual(Array.from(pos.board),cells);
+  assert.equal(pos.boardHash,boardHash(pos.board));
+  assert.equal(pos.toMove,WHITE);
+  assert.equal(pos.capturedBlackStones,4);
+  assert.equal(pos.capturedWhiteStones,3);
+  assert.equal(createEmptyPosition(3,2).board.length,6);
+});
