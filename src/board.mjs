@@ -103,6 +103,45 @@ export function findGroup(board, width, height, start) {
   return { color, stones, liberties };
 }
 
+/**
+ * Read the source-qualified CONTACT incidence of one occupied connected group.
+ *
+ * This reuses findGroup (the engine's original occupied same-color reach) and
+ * neighbors (its original board adjacency); it does not invent a second
+ * connectivity model. Each (stone, endpoint) pair is retained. By contrast,
+ * findGroup.liberties is the existential projection to DISTINCT empty endpoints.
+ *
+ * endpointInjective is true exactly when every liberty has at most one touching
+ * stone; when false, the liberty set cannot reconstruct contact incidence.
+ *
+ * Fixed-position observation only: NOT ko-qualified legal moves, ownership,
+ * entanglement entropy, a Crofton geodesic measure, or a strategy score.
+ * Coordinates refer to this source board's row-major points.
+ */
+export function findGroupBoundaryIncidence(board, width, height, start) {
+  const group = findGroup(board, width, height, start);
+  const fibers = new Map();
+  const contacts = [];
+  for (const stone of group.stones) {
+    for (const endpoint of neighbors(width, height, stone)) {
+      if (board[endpoint] !== EMPTY) continue;
+      contacts.push(Object.freeze({ stone, endpoint }));
+      fibers.set(endpoint, (fibers.get(endpoint) ?? 0) + 1);
+    }
+  }
+  contacts.sort((a, b) => a.endpoint - b.endpoint || a.stone - b.stone);
+  const liberties = [...group.liberties].sort((a, b) => a - b);
+  const sharedLiberties = liberties.filter(endpoint => fibers.get(endpoint) > 1);
+  return Object.freeze({
+    color: group.color,
+    stones: Object.freeze([...group.stones].sort((a, b) => a - b)),
+    liberties: Object.freeze(liberties),
+    contacts: Object.freeze(contacts),
+    sharedLiberties: Object.freeze(sharedLiberties),
+    endpointInjective: sharedLiberties.length === 0,
+  });
+}
+
 export function createEmptyBoard(width, height) {
   return new Uint8Array(width * height);
 }
