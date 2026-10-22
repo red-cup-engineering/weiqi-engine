@@ -116,27 +116,53 @@ export function findGroup(board, width, height, start) {
  *
  * Fixed-position observation only: NOT ko-qualified legal moves, ownership,
  * entanglement entropy, a Crofton geodesic measure, or a strategy score.
- * Coordinates refer to this source board's row-major points.
+ * Only contacts with EMPTY endpoints are liberties. The FULL unit-edge cut\n * delta(group) ALSO includes opponent-stone contacts; the static boundary\n * cut is not automatically a minimum s–t cut or a physical bit-thread flow.\n * Coordinates refer to this source board's row-major points.
  */
 export function findGroupBoundaryIncidence(board, width, height, start) {
   const group = findGroup(board, width, height, start);
   const fibers = new Map();
   const contacts = [];
+  const oppositionContacts = [];
+  const edgeBoundaryContacts = [];
+  const members = new Set(group.stones);
   for (const stone of group.stones) {
     for (const endpoint of neighbors(width, height, stone)) {
-      if (board[endpoint] !== EMPTY) continue;
-      contacts.push(Object.freeze({ stone, endpoint }));
-      fibers.set(endpoint, (fibers.get(endpoint) ?? 0) + 1);
+      if (members.has(endpoint)) continue;
+      const exterior = board[endpoint];
+      // Connected components are maximal for the original same-colour
+      // adjacency. An external adjacent same-colour stone would be a defect.
+      if (exterior === group.color)
+        throw new Error("group reach missed a same-colour adjacent stone");
+      if (exterior === EMPTY) {
+        contacts.push(Object.freeze({ stone, endpoint }));
+        fibers.set(endpoint, (fibers.get(endpoint) ?? 0) + 1);
+      } else {
+        oppositionContacts.push(Object.freeze({ stone, endpoint, color: exterior }));
+      }
+      // This is the FULL graph cut delta(A) between the occupied string A
+      // and its complement. Only the EMPTY endpoints are Go liberties.
+      edgeBoundaryContacts.push(Object.freeze({
+        stone, endpoint, exteriorKind: exterior === EMPTY ? "liberty" : "opposition",
+      }));
     }
   }
-  contacts.sort((a, b) => a.endpoint - b.endpoint || a.stone - b.stone);
+  const order = (a, b) => a.endpoint - b.endpoint || a.stone - b.stone;
+  contacts.sort(order);
+  oppositionContacts.sort(order);
+  edgeBoundaryContacts.sort(order);
   const liberties = [...group.liberties].sort((a, b) => a - b);
   const sharedLiberties = liberties.filter(endpoint => fibers.get(endpoint) > 1);
+  if (contacts.length + oppositionContacts.length !== edgeBoundaryContacts.length)
+    throw new Error("source group cut partition is inconsistent");
   return Object.freeze({
     color: group.color,
     stones: Object.freeze([...group.stones].sort((a, b) => a - b)),
     liberties: Object.freeze(liberties),
     contacts: Object.freeze(contacts),
+    oppositionContacts: Object.freeze(oppositionContacts),
+    edgeBoundaryContacts: Object.freeze(edgeBoundaryContacts),
+    unitCutCapacity: edgeBoundaryContacts.length,
+    libertiesAreFullCutBoundary: oppositionContacts.length === 0,
     sharedLiberties: Object.freeze(sharedLiberties),
     endpointInjective: sharedLiberties.length === 0,
   });
