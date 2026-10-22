@@ -23,8 +23,9 @@
 // .mjs sources (Node, via the upstream package) and
 // against generated browser .mjs modules (public/js/kernel/*.mjs,
 // see public/js/play-app.mjs), without duplicating a single line of rules
-// logic. All legality is delegated to `game.isLegal` / `game.play`; this
-// module only *chooses* among moves the kernel has already certified legal.
+// logic. All legality is delegated to the engine's exact historical
+// `Game.legalPlacementFrontier` / `Game.play`; this module only *chooses*
+// among moves the engine has already certified legal.
 //
 
 /**
