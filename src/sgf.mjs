@@ -69,6 +69,9 @@ export function parseSgfCollection(text) {
         values.push(parsePropValue());
         skipWs();
       }
+      // SGF FF[4] grammar requires at least one bracketed value for
+      // every property. B is not a pass without B[]: that is no value.
+      if (values.length === 0) throw new Error(`SGF property ${ident} lacks a value at offset ${i}`);
       // Property identifiers are unique within an SGF node. Overwriting
       // an earlier SZ, AB or move property would silently change the game.
       if (Object.hasOwn(properties, ident)) {
@@ -211,21 +214,40 @@ export function sgfToGameRecord(text) {
   if (tree.nodes.length === 0) throw new Error("SGF game tree has no nodes");
 
   const root = tree.nodes[0];
+  // The game-record projection consumes only one value for each scalar
+  // property. Refuse extra values rather than silently discard evidence.
+  for (const key of ["GM", "FF", "SZ", "RU", "KM", "RE", "HA"]) {
+    if (root.properties[key]?.length > 1) {
+      throw new Error(`SGF ${key} must have exactly one value`);
+    }
+  }
+  if (root.properties.GM && root.properties.GM[0] !== "1") {
+    throw new Error("Only Go game records GM[1] can be imported as Weiqi");
+  }
   const szValue = root.properties.SZ?.[0];
   const size = szValue === undefined ? 19 : Number(szValue);
-  if (!Number.isInteger(size) || size <= 0) {
-    // Most commonly a legal-but-unsupported SZ[width:height] non-square
-    // board (this convenience layer only reads/writes square-board game
-    // records, per the module comment); reject clearly rather than
-    // silently propagating NaN into every downstream point.
-    throw new Error(`Unsupported SGF board size: "${szValue}" (only a single positive integer is supported)`);
+  if (!Number.isSafeInteger(size) || size < 1 || size > 19
+      || (szValue !== undefined && !/^\+?[0-9]+$/u.test(szValue))) {
+    // This engine's rules machine supports square boards up to 19×19.
+    // Never coerce an SGF exponent/fraction/rectangle into a new board.
+    throw new Error(`Unsupported SGF board size: "${szValue}" (expected square 1–19)`);
   }
   const ruleset = root.properties.RU?.[0];
-  const komi = root.properties.KM ? Number(root.properties.KM[0]) : undefined;
+  const kmValue = root.properties.KM?.[0];
+  // Number("") is 0 and Number("garbage") is NaN: neither is a
+  // legitimate interpretation of a declared SGF Real/komi value.
+  if (kmValue !== undefined &&
+      (!/^[+-]?[0-9]+(?:\.[0-9]+)?$/u.test(kmValue) || !Number.isFinite(Number(kmValue)))) {
+    throw new Error(`Invalid SGF komi KM[${kmValue}]`);
+  }
+  const komi = kmValue === undefined ? undefined : Number(kmValue);
   const result = root.properties.RE?.[0];
   const handicap = root.properties.AB
     ? root.properties.AB.map((v) => pointToCoord(size, sgfCoordToPoint(size, v)))
     : undefined;
+  if (handicap && new Set(handicap).size !== handicap.length) {
+    throw new Error("SGF handicap setup contains duplicate AB intersections");
+  }
   // HA declares the intended handicap; AB gives its actual placement.
   // Keep that distinction: a root AB without HA could be arbitrary setup
   // stones, and a mismatched HA must not silently become a different game.
@@ -247,13 +269,23 @@ export function sgfToGameRecord(text) {
     if (node.properties.AW || node.properties.AE || (mainLineIndex > 0 && node.properties.AB)) {
       throw new Error("SGF setup edits are not supported by linear game records");
     }
-    mainLineIndex++;
-    if (node.properties.B) {
-      const v = node.properties.B[0];
-      moves.push({ color: BLACK, point: isSgfPass(size, v) ? "pass" : sgfCoordToPoint(size, v) });
+    const black = node.properties.B;
+    const white = node.properties.W;
+    // A Go node represents at most one move, and each move has one
+    // value (possibly empty for pass). Do not manufacture a two-turn
+    // sequence from one node or silently drop excess move values.
+    if ((black && white) || black?.length > 1 || white?.length > 1) {
+      throw new Error("SGF game node must contain at most one single-valued move B or W");
     }
-    if (node.properties.W) {
-      const v = node.properties.W[0];
+    if ((black || white) && node.properties.AB) {
+      throw new Error("SGF move and setup stones cannot share a node");
+    }
+    mainLineIndex++;
+    if (black) {
+      const v = black[0];
+      moves.push({ color: BLACK, point: isSgfPass(size, v) ? "pass" : sgfCoordToPoint(size, v) });
+    } else if (white) {
+      const v = white[0];
       moves.push({ color: WHITE, point: isSgfPass(size, v) ? "pass" : sgfCoordToPoint(size, v) });
     }
   }
