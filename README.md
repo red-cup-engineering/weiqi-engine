@@ -99,6 +99,12 @@ Everything re-exports from `src/index.mjs`:
   `fork()` copies the full game-state *history and bookkeeping* for an
   independent continuation, sharing immutable Position values rather than
   replaying moves or treating the current board as an entire game.
+  `fork()` shares its internal typed-array boards for efficient trusted
+  search, so callers shall not mutate them. `materializeWeiqiGame` at the
+  public session boundary instead clones **every historical board** before
+  returning a mutable Game. This prevents an observer's writable typed-array
+  changes from contaminating the private already-validated session, including
+  earlier ko/superko history.
   Search engines shall branch through `fork()`: starting `new Game` from
   `current` alone can silently legalize forbidden ko/superko recaptures.
   The existing `countPosition(game, deadPoints)` is now exported through
