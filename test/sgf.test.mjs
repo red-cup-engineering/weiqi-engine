@@ -224,3 +224,75 @@ test("unsupported SGF setup edits are refused rather than silently dropped", () 
     assert.throws(() => sgfToGameRecord(sgf), /SGF setup edits are not supported/);
   }
 });
+
+
+test("the FF[4] parser requires a bracketed value for every property", () => {
+  for (const invalid of [
+    "(;GM[1]SZ[9];B;W[cc])",
+    "(;GM[1]SZ[9]C;B[cc])",
+    "(;GM[1]SZ[9];B[aa](;W)(;W[bb]))",
+  ]) {
+    assert.throws(() => parseSgfCollection(invalid), /lacks a value/u);
+    assert.throws(() => sgfToGameRecord(invalid), /lacks a value/u);
+  }
+  assert.deepEqual(parseSgfCollection("(;GM[1]SZ[9];B[];W[tt])")[0].nodes[1].properties.B,
+    [""], "B[] is a valid pass; a bare B is not");
+});
+
+test("SGF import refuses multiple moves in one node without manufacturing turns", () => {
+  for (const invalid of [
+    "(;GM[1]SZ[9];B[aa]W[bb])",
+    "(;GM[1]SZ[9];B[aa][bb])",
+    "(;GM[1]SZ[9];W[cc][dd])",
+    "(;GM[1]SZ[9]AB[cc]B[ee])",
+  ]) assert.throws(() => sgfToGameRecord(invalid), /single-valued move|move and setup/u,
+    "cannot interpret an illegal node as multiple accepted moves");
+  const completeTree = parseSgfCollection("(;GM[1]SZ[9];B[aa]W[bb])");
+  assert.deepEqual(completeTree[0].nodes[1].properties,
+    { B: ["aa"], W: ["bb"] }, "generic parser retains evidence even when game import refuses it");
+});
+
+test("SGF game-record root refuses lossy scalar, foreign game and unsupported geometry", () => {
+  for (const invalid of [
+    "(;GM[2]SZ[9];B[aa])",
+    "(;GM[1]SZ[9]KM[6.5][7.5];B[aa])",
+    "(;GM[1]SZ[9]RU[Chinese][Japanese];B[aa])",
+    "(;GM[1]SZ[9]HA[2]AB[cc][cc];W[ee])",
+    "(;GM[1]SZ[100];B[aa])",
+    "(;GM[1]SZ[1e1];B[aa])",
+  ]) assert.throws(() => sgfToGameRecord(invalid),
+    /GM\[1\]|exactly one|duplicate AB|board size/u);
+});
+
+test("SGF numeric komi is finite and explicit: malformed or empty is not zero", () => {
+  for (const bad of ["", "NaN", "Infinity", "1e200", "6 points", ".", "7."]) {
+    assert.throws(() => sgfToGameRecord("(;GM[1]SZ[9]KM[" + bad + "];B[aa])"),
+      /Invalid SGF komi KM/u, "a malformed KM[" + bad + "] cannot silently become 0 or NaN");
+  }
+  for (const [value, expected] of [["0", 0], ["+7.5", 7.5], ["-0.5", -0.5], ["6", 6]]) {
+    assert.equal(sgfToGameRecord("(;GM[1]SZ[9]KM[" + value + "];B[aa])").komi,
+      expected);
+  }
+  const missing = sgfToGameRecord("(;GM[1]SZ[9];B[aa])");
+  assert.equal(missing.komi, undefined, "absent KM remains absent instead of invented");
+});
+
+test("legal passes, variations, setup and standard game-record export still round-trip", () => {
+  const record = {
+    size: 9, ruleset: "chinese", komi: 7.5, handicap: ["C3", "G7"],
+    moves: [
+      { color: WHITE, point: 40 },
+      { color: BLACK, point: "pass" },
+      { color: WHITE, point: 41 },
+    ],
+  };
+  assert.deepEqual(sgfToGameRecord(gameRecordToSgf(record)).moves, record.moves);
+  const varying = sgfToGameRecord("(;GM[1]SZ[9];B[aa](;W[bb];B[cc])(;W[dd]))");
+  assert.deepEqual(varying.moves, [
+    { color: BLACK, point: sgfCoordToPoint(9, "aa") },
+    { color: WHITE, point: sgfCoordToPoint(9, "bb") },
+    { color: BLACK, point: sgfCoordToPoint(9, "cc") },
+  ]);
+  const legacyPass = sgfToGameRecord("(;GM[1]FF[3]SZ[19];B[tt];W[])");
+  assert.deepEqual(legacyPass.moves.map(move => move.point), ["pass", "pass"]);
+});
