@@ -3,10 +3,14 @@
 // event annotator.
 
 import { BLACK, WHITE, coordToPoint, findGroupBoundaryIncidence, isBoardSize, opponent, pointToCoord } from "./board.mjs";
-import { applyPass, applyStonePlacement, createEmptyPosition } from "./position.mjs";
+import { applyPass, applyStonePlacement, createEmptyPosition, createPositionFromCells } from "./position.mjs";
 import { getRuleset, handicapPoints } from "./rulesets.mjs";
 import { annotateMove, annotatePass } from "./events.mjs";
 import { computeTerritory, marksWholeDeadGroups, removeDeadStones, scoreArea, scoreTerritory } from "./scoring.mjs";
+
+// Not exported: only this module's Game.fork() may bypass fresh-input
+// validation and copy costs when sharing the engine's own accepted history.
+const TRUSTED_HISTORY_FORK = Symbol("trusted Weiqi Game history fork");
 
 /** How a game ended: by one side resigning, or by an agreed count after two passes. */
 
@@ -84,7 +88,7 @@ export class Game {
   /** Set once the game has ended by resignation or an agreed count; play() refuses afterwards. */
   result = null;
 
-  constructor(size, rulesetName, initial, handicap = 0) {
+  constructor(size, rulesetName, initial, handicap = 0, internalFork = null) {
     if (!isBoardSize(size)) throw new Error(`Unsupported board size: ${size}`);
     if (!Number.isSafeInteger(handicap) || handicap < 0 || handicap === 1)
       throw new TypeError("A Go handicap must be zero or a supported fixed-star count");
@@ -92,7 +96,28 @@ export class Game {
     this.size = size;
     this.ruleset = getRuleset(rulesetName);
     this.handicap = handicap;
-    this.history = [initial ?? createEmptyPosition(size)];
+    if (initial == null) {
+      this.history = [createEmptyPosition(size)];
+    } else if (internalFork === TRUSTED_HISTORY_FORK) {
+      // This constructor call is made only by Game.fork() within this module.
+      // Existing engine positions can be shared for efficient AI playouts.
+      this.history = [initial];
+    } else {
+      // Fresh initial positions cross an external boundary. A Position's
+      // board is a writable Uint8Array even when its record is nominally
+      // immutable: reject alien geometry and rebuild trusted hash/counters
+      // from copied, validated cells before admitting any move.
+      if (initial.width !== size || initial.height !== size) {
+        throw new RangeError("Initial Weiqi position must match the Game board size");
+      }
+      if (initial.toMove !== BLACK && initial.toMove !== WHITE ||
+          !Number.isSafeInteger(initial.capturedBlackStones) ||
+          !Number.isSafeInteger(initial.capturedWhiteStones)) {
+        throw new TypeError("Initial Weiqi position must declare its player and prisoner counts");
+      }
+      this.history = [createPositionFromCells(size, size, initial.board, initial.toMove,
+        initial.capturedBlackStones, initial.capturedWhiteStones)];
+    }
   }
 
   get current() {
@@ -110,7 +135,7 @@ export class Game {
    * No historical commands are replayed or separate rules implemented.
    */
   fork() {
-    const branch = new Game(this.size, this.ruleset.name, this.history[0], this.handicap);
+    const branch = new Game(this.size, this.ruleset.name, this.history[0], this.handicap, TRUSTED_HISTORY_FORK);
     branch.history = this.history.slice();
     branch.moveEvents = this.moveEvents.slice();
     branch.activeKoPoint = this.activeKoPoint;

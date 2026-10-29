@@ -96,6 +96,10 @@ Everything re-exports from `src/index.mjs`:
   streaks, semantic events and game completion. `play(move)` returns a
   `PlayOutcome` (`{ ok: true, events, passStreak }` or
   `{ ok: false, reason: IllegalReason }`); `isLegal(move)` is read-only.
+  A fresh externally supplied starting `Position` must declare matching
+  board geometry, turn and prisoner counts. The constructor copies and
+  rehashes validated cells so its rules history cannot be changed through
+  the caller's original array; `null` still means an empty start.
   `fork()` copies the full game-state *history and bookkeeping* for an
   independent continuation, sharing immutable Position values rather than
   replaying moves or treating the current board as an entire game.
