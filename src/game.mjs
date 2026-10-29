@@ -96,7 +96,7 @@ export class Game {
     this.size = size;
     this.ruleset = getRuleset(rulesetName);
     this.handicap = handicap;
-    if (initial === undefined) {
+    if (initial == null) {
       this.history = [createEmptyPosition(size)];
     } else if (internalFork === TRUSTED_HISTORY_FORK) {
       // This constructor call is made only by Game.fork() within this module.
@@ -109,6 +109,11 @@ export class Game {
       // from copied, validated cells before admitting any move.
       if (initial.width !== size || initial.height !== size) {
         throw new RangeError("Initial Weiqi position must match the Game board size");
+      }
+      if (initial.toMove !== BLACK && initial.toMove !== WHITE ||
+          !Number.isSafeInteger(initial.capturedBlackStones) ||
+          !Number.isSafeInteger(initial.capturedWhiteStones)) {
+        throw new TypeError("Initial Weiqi position must declare its player and prisoner counts");
       }
       this.history = [createPositionFromCells(size, size, initial.board, initial.toMove,
         initial.capturedBlackStones, initial.capturedWhiteStones)];
