@@ -151,10 +151,18 @@ export function materializeWeiqiGame(session) {
   if (!sameConfig(session.config, session.state.config)) throw new TypeError("Weiqi session state belongs to another configuration");
   const validated = validatedGames.get(session);
   if (validated === undefined) return gameFor(session.config, session.commands);
-  // Game.fork preserves immutable positions and full ko/superko history.
-  // Clone event payloads too: callers may inspect or modify the returned
-  // mutable Game, but cannot affect the private already-admitted record.
+  // Game.fork shares history positions intentionally for fast search forks.
+  // Their Uint8Array boards are writable, however: exposing that alias to
+  // an observer would let it poison validatedGames and make a legal command
+  // fail against a fabricated board/hash pairing (including old ko history).
+  // Clone ALL historical boards at this external materialization boundary;
+  // preserve fast internal Game.fork semantics for trusted playouts.
   const game = validated.fork();
+  game.history = game.history.map((position) => ({
+    ...position,
+    board: position.board.slice(),
+  }));
+  // Event objects are also observer-owned and must not alias cached events.
   game.moveEvents = structuredClone(game.moveEvents);
   return game;
 }
