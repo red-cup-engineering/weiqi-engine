@@ -107,7 +107,12 @@ export function candidateMoveCoords(game, kernel) {
     // Score its pure kernel position rather than forking/replaying an entire
     // game for each empty point; 19x19 can offer hundreds of candidates.
     const placement = kernel.applyStonePlacement(game.current, point, game.ruleset);
-    return placement.ok && advantage(kernel.scoreArea(placement.position, game.ruleset)) > initialAdvantage;
+    // Compare like-for-like with countPosition(game): an even-game preview
+    // would change komi and omit handicap compensation, making Black pass
+    // on useful moves (and potentially crediting White for no real gain).
+    return placement.ok && advantage(kernel.scoreArea(
+      placement.position, game.ruleset, undefined, game.handicap,
+    )) > initialAdvantage;
   });
 }
 
