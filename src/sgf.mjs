@@ -93,6 +93,11 @@ export function parseSgfCollection(text) {
       nodes.push(parseNode());
       skipWs();
     }
+    // A variation is a GameTree too: SGF requires a non-empty sequence
+    // before any children. Accepting () can silently end the main line.
+    if (nodes.length === 0) {
+      throw new Error(`SGF game tree must contain at least one node at offset ${i}`);
+    }
     const children = [];
     skipWs();
     while (s[i] === "(") {

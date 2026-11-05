@@ -319,3 +319,30 @@ test("legal passes, variations, setup and standard game-record export still roun
   const legacyPass = sgfToGameRecord("(;GM[1]FF[3]SZ[19];B[tt];W[])");
   assert.deepEqual(legacyPass.moves.map(move => move.point), ["pass", "pass"]);
 });
+
+test("SGF requires a node in every game tree, including all variations", () => {
+  for (const text of [
+    "()", "( \n\t )", "((;B[aa]))",
+    "(;GM[1]SZ[9];B[aa]()(;W[bb]))",
+    "(;GM[1]SZ[9];B[aa](;W[bb])())",
+    "(;GM[1]SZ[9];B[aa]((;W[bb])))",
+    "(;GM[1]SZ[9];B[aa](;W[bb]()))",
+    "(;GM[1]SZ[9];B[aa])()",
+  ]) {
+    assert.throws(() => parseSgfCollection(text), /SGF game tree must contain at least one node/,
+      `refuse an empty sequence in ${text}`);
+    assert.throws(() => sgfToGameRecord(text), /SGF game tree must contain at least one node/,
+      "a malformed branch cannot silently truncate or change the imported record");
+  }
+});
+
+test("propertyless SGF nodes are valid and do not terminate a variation", () => {
+  const text = "(;GM[1]SZ[9];B[aa](; ;W[bb];)(;))";
+  const trees = parseSgfCollection(text);
+  assert.deepEqual(trees[0].children[0].nodes[0].properties, {});
+  assert.deepEqual(parseSgfCollection(serializeSgfCollection(trees)), trees);
+  assert.deepEqual(sgfToGameRecord(text).moves, [
+    { color: BLACK, point: 0 }, { color: WHITE, point: 10 },
+  ]);
+  assert.deepEqual(parseSgfCollection("(;)")[0], { nodes: [{ properties: {} }], children: [] });
+});
