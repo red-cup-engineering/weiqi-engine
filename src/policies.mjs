@@ -361,6 +361,13 @@ function playoutCandidates(kernel, board, width, color) {
   return points;
 }
 
+/** Two current passes open counting; an earlier pass pair does not stop
+ * a resumed game. Keep the engine's historical mainPhaseEnded observation
+ * intact, and never search beyond a final settlement or resignation. */
+function searchPhaseOpen(game) {
+  return game.result === null && game.passStreak < 2;
+}
+
 /**
  * Play `game` (mutated) out with uniformly random non-eye-filling legal
  * moves until two consecutive passes or `maxMoves`, and return the winner
@@ -372,7 +379,7 @@ function playoutCandidates(kernel, board, width, color) {
  */
 export function randomPlayout(game, kernel, rng = Math.random, maxMoves = game.size * game.size * 2) {
   const width = game.size;
-  for (let moves = 0; moves < maxMoves && !game.mainPhaseEnded; moves++) {
+  for (let moves = 0; moves < maxMoves && searchPhaseOpen(game); moves++) {
     const { board, toMove } = game.current;
     const candidates = playoutCandidates(kernel, board, width, toMove);
     let played = false;
@@ -539,7 +546,7 @@ export function chooseMonteCarloMove(game, kernel, rng = Math.random, options = 
       path.push(next);
       node = next;
     }
-    if (node.children === null && node.visits > 0 && !trial.mainPhaseEnded) {
+    if (node.children === null && node.visits > 0 && searchPhaseOpen(trial)) {
       node.children = expandChildren(trial, kernel, rng, playouts);
       while (node.children.length > 0) {
         const next = node.children[0];
