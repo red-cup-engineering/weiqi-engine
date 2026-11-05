@@ -1,26 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { annotateMove, annotatePass, TERM_PATH } from "../src/events.mjs";
+import { annotateMove, annotatePass, TERM_PATH, TERM_REFERENCES } from "../src/events.mjs";
 import { applyStonePlacement, createPositionFromCells } from "../src/position.mjs";
 import { BLACK, WHITE, EMPTY, coordToPoint } from "../src/board.mjs";
 import { Game } from "../src/game.mjs";
 
 const ILLEGAL = { suicide: "illegal" };
-const PACKAGE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-
-const WEIQI_GLOSSARY_ROOT = resolve(
-  PACKAGE_ROOT,
-  "../../../../../../../../../science-services-section/services/philosophy-services-section/services/relationality-services-section/services/agency-services-section/services/being-services-section/services/doing-services-section/services/playing-services-section/services/gaming-services-section/services/board-games-services-section/services/weiqi-services-section/content/text/glossary/terms",
-);
-
-test("every semantic term reference resolves to the Weiqi science corpus", () => {
+test("semantic terms use stable Science references, independent of checkout layout", () => {
+  assert.equal(TERM_PATH, TERM_REFERENCES, "the legacy export retains object identity");
+  assert.deepEqual(Object.keys(TERM_REFERENCES).sort(),
+    ["atari", "capture", "connection", "eye", "ko", "life-and-death", "pass"]);
   for (const [term, reference] of Object.entries(TERM_PATH)) {
     assert.equal(reference, `science://lenticule-science/weiqi/terms/${term}`);
-    const source = join(WEIQI_GLOSSARY_ROOT, `${term}.md`);
-    assert.ok(existsSync(source), `${term} has no science-corpus source at ${source}`);
   }
 });
 

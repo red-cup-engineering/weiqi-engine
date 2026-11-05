@@ -32,6 +32,8 @@ test("fork preserves historical superko across the real triple-ko cycle", () => 
     ". X O X . . . O X O . . . X O X .",
     ". O . O . . . X . X . . . O . O .",
     ". . O . . . . . X . . . . . O . .",
+    // Preserve the three ko fragments inside the supported 17x17 Game.
+    ...Array(12).fill(". ".repeat(17).trim()),
   ], 17, BLACK);
   for (const [ruleset, reason] of [
     ["chinese", "positional-superko"],
@@ -58,7 +60,7 @@ test("fork preserves pass streaks and terminal state without changing its parent
   assert.equal(branch.passStreak, 1);
   const pass = branch.play("pass");
   assert.equal(pass.ok, true);
-  assert.ok(pass.events.some(event => event.type === "game-ended"));
+  assert.ok(pass.events.some(event => event.type === "counting-opened"));
   assert.equal(branch.mainPhaseEnded, true);
   assert.equal(game.mainPhaseEnded, false);
   assert.equal(game.passStreak, 1);

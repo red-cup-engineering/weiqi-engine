@@ -148,7 +148,8 @@ test("one upstream territory reading produces the same area, territory and owner
     ". . X X O . .",
     ". . X . O . .",
   ];
-  const { position } = parseDiagram(rows, 7);
+  // Continue both walls to the bottom edge of a supported 7x7 Game.
+  const { position } = parseDiagram([...rows, rows[0], rows[0]], 7);
   const territory = computeTerritory(position);
   for (const rulesetName of ["chinese", "japanese", "aga"]) {
     const ruleset = getRuleset(rulesetName);

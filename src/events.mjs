@@ -52,7 +52,7 @@ import { findGroup, neighbors, opponent, pointToCoord } from "./board.mjs";
  * to Red Cup. A package-relative source path would falsely claim engineering
  * owns that corpus and would break for installed registry consumers.
  */
-export const TERM_PATH = Object.freeze({
+export const TERM_REFERENCES = Object.freeze({
   atari: "science://lenticule-science/weiqi/terms/atari",
   capture: "science://lenticule-science/weiqi/terms/capture",
   ko: "science://lenticule-science/weiqi/terms/ko",
@@ -62,10 +62,13 @@ export const TERM_PATH = Object.freeze({
   pass: "science://lenticule-science/weiqi/terms/pass",
 });
 
+/** @deprecated Use TERM_REFERENCES. Values are stable URIs, not filesystem paths. */
+export const TERM_PATH = TERM_REFERENCES;
+
   
 
 function mkEvent(type, term, detail) {
-  return { type, term, termRef: TERM_PATH[term], detail };
+  return { type, term, termRef: TERM_REFERENCES[term], detail };
 }
 
 /** A "simple eye" test: every orthogonal neighbor of `point` is `color` (edges/corners satisfied trivially by having fewer neighbors). No diagonal-control check — see the limitation note in the package README. */

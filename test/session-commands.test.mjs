@@ -114,7 +114,7 @@ test("the SGF projection carries handicap stones, komi, the White-first move ord
   session = admit(session, { kind: "resign", color: BLACK });
   const record = weiqiSessionToSgfRecord(session);
   assert.deepEqual(record.handicap, ["G7", "C3"]);
-  assert.equal(record.komi, 7.5);
+  assert.equal(record.komi, 0.5, "fixed-star handicap uses the source-owned nominal komi");
   assert.equal(record.result, "W+R");
   assert.deepEqual(record.moves.map((move) => move.color), [WHITE, BLACK]);
   const sgf = gameRecordToSgf(record);
