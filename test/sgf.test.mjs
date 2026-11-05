@@ -11,6 +11,29 @@ import {
 } from "../src/sgf.mjs";
 import { BLACK, WHITE } from "../src/board.mjs";
 
+test("linear SGF imports refuse player-to-play setup instead of changing the next player", () => {
+  for (const text of [
+    "(;GM[1]SZ[9]PL[W])",
+    "(;GM[1]SZ[9]PL[B];B[aa])",
+    "(;GM[1]SZ[9];B[aa];PL[B])",
+    "(;GM[1]SZ[9];B[aa](;PL[B])(;W[bb]))",
+    "(;GM[1]SZ[9];B[aa];W[bb];PL[W];B[cc])",
+  ]) {
+    assert.throws(() => sgfToGameRecord(text), /player-to-play setup PL.*not supported/,
+      `a linear move record cannot preserve the explicit turn in ${text}`);
+    assert.deepEqual(parseSgfCollection(serializeSgfCollection(parseSgfCollection(text))),
+      parseSgfCollection(text), "the full SGF tree retains setup for capable consumers");
+  }
+});
+
+test("player-to-play setup in an unselected variation does not invalidate the main line", () => {
+  const text = "(;GM[1]SZ[9];B[aa](;W[bb])(;PL[B];B[cc]))";
+  assert.deepEqual(sgfToGameRecord(text).moves, [
+    { color: BLACK, point: 0 }, { color: WHITE, point: 10 },
+  ]);
+  assert.deepEqual(parseSgfCollection(text)[0].children[1].nodes[0].properties.PL, ["B"]);
+});
+
 test("SGF coordinate encoding is 0-indexed and does NOT skip 'i' (unlike Go notation)", () => {
   assert.equal(pointToSgfCoord(19, 0), "aa");
   assert.equal(sgfCoordToPoint(19, "aa"), 0);

@@ -188,7 +188,12 @@ Everything re-exports from `src/index.mjs`:
   The imported record retains SGF `HA` as `handicapCount` (declared number)
   separately from `AB` as `handicap` (the actual Black setup coordinates).
   This prevents consumers from inferring handicaps from arbitrary setup
-  stones. Setup edits with `AW`/`AE` or non-root `AB` are refused by the
+  stones. Player-to-play setup `PL` anywhere on the selected main line is
+  refused because a linear move record cannot preserve a turn change
+  without a move; dropping it would let Study continue with the wrong player.
+  This includes a redundant explicit turn: the adapter does not interpret
+  setup instructions. An unselected variation's `PL` stays in the full tree
+  and does not invalidate the main line. Setup edits with `AW`/`AE` or non-root `AB` are refused by the
   linear-record adapter rather than silently omitted; the full tree parser
   still preserves them as SGF properties. SGF FF[4] escaped physical line
   breaks are discarded in property values (including CRLF/LFCR forms), and

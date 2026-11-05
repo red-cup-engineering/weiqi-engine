@@ -46,6 +46,22 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       assert.equal(kernel.countPosition(new kernel.Game(9, "japanese")).mode, "territory");
       assert.equal(kernel.countPosition(new kernel.Game(9, "chinese")).mode, "area");
     });
+
+    await t.test("generated SGF import refuses turn-changing setup before a Study session exists", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      for (const text of ["(;GM[1]SZ[9]PL[W])", "(;GM[1]SZ[9];B[aa];PL[B])"]) {
+        assert.throws(() => kernel.sgfToGameRecord(text), /player-to-play setup PL.*not supported/);
+      }
+      const record = kernel.sgfToGameRecord("(;GM[1]SZ[9];B[aa](;W[bb])(;PL[B]))");
+      const commands = record.moves.map(({ point }) => ({
+        kind: "play", move: kernel.pointToCoord(record.size, point),
+      }));
+      const session = kernel.createWeiqiGameSession({ size: record.size, ruleset: "chinese" }, commands);
+      assert.equal(session.version, 2);
+      assert.equal(session.state.toMove, kernel.BLACK);
+      assert.equal(session.state.board[0], kernel.BLACK);
+      assert.equal(session.state.board[10], kernel.WHITE);
+    });
   } finally {
     await rm(destination, { recursive: true, force: true });
   }
