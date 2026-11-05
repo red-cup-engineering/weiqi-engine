@@ -47,6 +47,26 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       assert.equal(kernel.countPosition(new kernel.Game(9, "chinese")).mode, "area");
     });
 
+    await t.test("generated bot policies continue a handicap game after an early pass", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      const policies = await import(pathToFileURL(join(destination, "policies.mjs")).href);
+      const session = kernel.createWeiqiGameSession({ size: 9, ruleset: "chinese", handicap: 2 }, [
+        { kind: "play", move: "D4" }, { kind: "play", move: "E4" }, { kind: "pass" },
+      ]);
+      const game = kernel.materializeWeiqiGame(session);
+      assert.ok(policies.candidateMoveCoords(game, kernel).length > 50);
+      for (const tier of policies.BOT_TIERS) {
+        const move = tier.id === "montecarlo"
+          ? policies.chooseMonteCarloMove(game, kernel, () => 0.37, { playouts: 5, maxPlayoutMoves: 0 })
+          : tier.chooser(game, kernel, () => 0.37);
+        assert.notEqual(move, "pass", tier.id);
+        const next = kernel.admitWeiqiGameCommand(session, session.version, { kind: "play", move });
+        assert.equal(next.ok, true, tier.id);
+        assert.equal(next.session.state.mainPhaseEnded, false);
+        assert.equal(next.session.state.passStreak, 0);
+      }
+    });
+
     await t.test("generated SGF import refuses turn-changing setup before a Study session exists", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       for (const text of ["(;GM[1]SZ[9]PL[W])", "(;GM[1]SZ[9];B[aa];PL[B])"]) {
