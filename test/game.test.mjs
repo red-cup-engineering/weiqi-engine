@@ -112,13 +112,14 @@ test("suicide is legal and self-removes under New Zealand rules, live through Ga
     ". X X X X .",
     ". . . . . .",
   ];
-  const { position } = parseDiagram(rows, 6, WHITE);
+  // Embed the original 6x5 fragment in a supported 6x6 Game.
+  const { position } = parseDiagram([...rows, ". . . . . ."], 6, WHITE);
 
   const nzGame = new Game(6, "newzealand", position);
   const legal = nzGame.play("D3");
   assert.ok(legal.ok);
-  assert.equal(nzGame.current.board[coordToPoint(6, 5, "C3")], EMPTY);
-  assert.equal(nzGame.current.board[coordToPoint(6, 5, "D3")], EMPTY);
+  assert.equal(nzGame.current.board[coordToPoint(6, 6, "C3")], EMPTY);
+  assert.equal(nzGame.current.board[coordToPoint(6, 6, "D3")], EMPTY);
   assert.equal(nzGame.current.capturedWhiteStones, 2);
 });
 
@@ -300,7 +301,8 @@ test("triple ko: three independent single-stone kos cycle the whole board back t
     ". O . O . . . X . X . . . O . O .",
     ". . O . . . . . X . . . . . O . .",
   ];
-  const { position: start } = parseDiagram(rows, 17, BLACK);
+  // Game owns square geometry; empty padding does not alter the three ko shapes.
+  const { position: start } = parseDiagram([...rows, ...Array(12).fill(". ".repeat(17).trim())], 17, BLACK);
   // B,W,B,W,B,W: capture koA, capture koB (fresh, not a retake), capture
   // koC (fresh), retake koA, retake koB, retake koC.
   const moves = ["C4", "J4", "P4", "C3", "J3", "P3"];
