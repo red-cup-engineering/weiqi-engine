@@ -263,6 +263,13 @@ export function sgfToGameRecord(text) {
   const moves = [];
   let mainLineIndex = 0;
   for (const node of mainLineNodes(tree)) {
+    // PL changes whose turn it is without a play or pass. The linear
+    // record has no such command: dropping it can successfully import a
+    // Study game with the wrong next player, including at the final node.
+    // Preserve it in the generic tree parser, but never flatten it away.
+    if (node.properties.PL) {
+      throw new Error("SGF player-to-play setup PL is not supported by linear game records");
+    }
     // Linear game records cannot faithfully reproduce SGF setup edits.
     // Refuse rather than losing White setup stones, cleared points or
     // non-root additions while telling Study it imported the whole game.
