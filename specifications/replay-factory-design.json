@@ -1,0 +1,4187 @@
+{
+  "requirement": {
+    "kind": "requirement",
+    "id": "weiqi-replay-state-references",
+    "met-when": [
+      {
+        "cell": "weiqi-replay-state-references:identity",
+        "target": "held",
+        "says": "Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules."
+      },
+      {
+        "cell": "weiqi-replay-state-references:refusal",
+        "target": "held",
+        "says": "Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states."
+      }
+    ]
+  },
+  "specification": {
+    "identity": {
+      "version": "0.1.0",
+      "stability": "draft",
+      "status": "draft",
+      "date-created": "2026-11-05",
+      "id": "weiqi-replay-state-references-spec",
+      "title": "Weiqi replay state identity",
+      "seat": "red-cup-engineering/weiqi-engine",
+      "carrier": "src/replay.mjs",
+      "authors": [
+        "Hai Xudi"
+      ],
+      "profile": "prose"
+    },
+    "whatThisIs": "The specification of Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w).",
+    "topics": [
+      {
+        "heading": "Source-owned requirement conditions",
+        "body": "{{clause:clause-0}}\n\n{{clause:clause-1}}",
+        "clauses": [
+          {
+            "id": "clause-0",
+            "keyword": "MUST",
+            "actor": "red-cup-engineering/weiqi-engine",
+            "statement": "Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.",
+            "test": "Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.",
+            "backedBy": [
+              "Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:identity"
+            ]
+          },
+          {
+            "id": "clause-1",
+            "keyword": "MUST",
+            "actor": "red-cup-engineering/weiqi-engine",
+            "statement": "Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.",
+            "test": "Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.",
+            "backedBy": [
+              "Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:refusal"
+            ]
+          }
+        ]
+      }
+    ],
+    "implementations": [],
+    "openQuestions": [],
+    "laws": [],
+    "standards": [],
+    "provenance": {
+      "derivedAt": "2026-11-05T00:00:00Z",
+      "derivedBy": "Hai Xudi, author qualification; no independent review asserted",
+      "derivedFrom": [
+        "weiqi-replay-state-references@ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w"
+      ]
+    }
+  },
+  "architecture": {
+    "type": "ArchitectureDescriptionCandidate",
+    "version": 1,
+    "identity": {
+      "id": "weiqi-replay-state-architecture",
+      "title": "Original replay state references",
+      "revision": "2026-11-05-result-references",
+      "owner": "red-cup-engineering/weiqi-engine",
+      "status": "candidate"
+    },
+    "standard": {
+      "designation": "ISO/IEC/IEEE 42010",
+      "edition": "2022",
+      "applicability": "Responsibility and dependency description for command-history source integration",
+      "conformance": "unassessed"
+    },
+    "system": {
+      "name": "Weiqi incremental replay",
+      "description": "Weiqi owns rule and immutable session state. The original Code adapter retains bounded references to observed successful source results; detached observations never replace cache-key identity.",
+      "sourceIds": [
+        "requirement",
+        "specification"
+      ]
+    },
+    "upstream": {
+      "requirementsSourceId": "requirement",
+      "specificationSourceId": "specification"
+    },
+    "sources": [
+      {
+        "id": "requirement",
+        "locator": "task:2026-11-05-coherent-software-family",
+        "revision": "ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w"
+      },
+      {
+        "id": "specification",
+        "locator": "generated:weiqi-replay-state-references-spec",
+        "revision": "ni:///sha-256;yHthBiOiGdL3T4XWGrhXi9J0Mc1TPASC6y5X3rnidvU"
+      }
+    ],
+    "stakeholders": [
+      {
+        "id": "game-author",
+        "name": "561 Group game author and players",
+        "concernIds": [
+          "concern-a",
+          "concern-b"
+        ]
+      }
+    ],
+    "concerns": [
+      {
+        "id": "concern-a",
+        "statement": "Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.",
+        "sourceIds": [
+          "requirement",
+          "specification"
+        ],
+        "requirementCellIds": [
+          "weiqi-replay-state-references:identity"
+        ],
+        "specificationClauseIds": [
+          "clause-0"
+        ]
+      },
+      {
+        "id": "concern-b",
+        "statement": "Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.",
+        "sourceIds": [
+          "requirement",
+          "specification"
+        ],
+        "requirementCellIds": [
+          "weiqi-replay-state-references:refusal"
+        ],
+        "specificationClauseIds": [
+          "clause-1"
+        ]
+      }
+    ],
+    "viewpoints": [
+      {
+        "id": "functional",
+        "name": "Functional",
+        "concernIds": [
+          "concern-a",
+          "concern-b"
+        ],
+        "modelKinds": [
+          "component"
+        ],
+        "method": "Source-observed deterministic command history and game-boundary save projection"
+      }
+    ],
+    "views": [
+      {
+        "id": "functional-view",
+        "name": "Functional view",
+        "viewpointId": "functional",
+        "modelIds": [
+          "model-a",
+          "model-a-alt",
+          "model-b"
+        ],
+        "sourceIds": [
+          "requirement",
+          "specification"
+        ]
+      }
+    ],
+    "models": [
+      {
+        "id": "model-a",
+        "kind": "component",
+        "content": "The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.",
+        "concernIds": [
+          "concern-a"
+        ],
+        "sourceIds": [
+          "requirement",
+          "specification"
+        ]
+      },
+      {
+        "id": "model-a-alt",
+        "kind": "component",
+        "content": "The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.",
+        "concernIds": [
+          "concern-a"
+        ],
+        "sourceIds": [
+          "requirement",
+          "specification"
+        ]
+      },
+      {
+        "id": "model-b",
+        "kind": "component",
+        "content": "The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.",
+        "concernIds": [
+          "concern-b"
+        ],
+        "sourceIds": [
+          "requirement",
+          "specification"
+        ]
+      }
+    ],
+    "correspondences": [],
+    "decisions": [
+      {
+        "id": "choice",
+        "statement": "Extend the original factory receiver with explicit bounded argument-reference metadata; preserve the Weiqi API and session owner.",
+        "rationale": "Cloning a state before passing it to extend loses incremental session identity even when the JSON is equal.",
+        "alternatives": [
+          "Rewrite Weiqi into unary stateless wrappers and replay every historical move."
+        ],
+        "concernIds": [
+          "concern-a",
+          "concern-b"
+        ],
+        "sourceIds": [
+          "requirement",
+          "specification"
+        ]
+      }
+    ],
+    "openQuestions": []
+  },
+  "high": {
+    "type": "EngineeringDesignCandidate",
+    "stage": "high-level",
+    "sources": [
+      {
+        "kind": "requirement",
+        "text": "{\"kind\":\"requirement\",\"id\":\"weiqi-replay-state-references\",\"met-when\":[{\"cell\":\"weiqi-replay-state-references:identity\",\"target\":\"held\",\"says\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\"},{\"cell\":\"weiqi-replay-state-references:refusal\",\"target\":\"held\",\"says\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\"}]}",
+        "digest": "sha256:3629da908743e8e2b33ace2bd226236e0ee364f1a9cce23d5aa77b966f61f9a6"
+      },
+      {
+        "kind": "specification",
+        "text": "{\"identity\":{\"version\":\"0.1.0\",\"stability\":\"draft\",\"status\":\"draft\",\"date-created\":\"2026-11-05\",\"id\":\"weiqi-replay-state-references-spec\",\"title\":\"Weiqi replay state identity\",\"seat\":\"red-cup-engineering/weiqi-engine\",\"carrier\":\"src/replay.mjs\",\"authors\":[\"Hai Xudi\"],\"profile\":\"prose\"},\"whatThisIs\":\"The specification of Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w).\",\"topics\":[{\"heading\":\"Source-owned requirement conditions\",\"body\":\"{{clause:clause-0}}\\n\\n{{clause:clause-1}}\",\"clauses\":[{\"id\":\"clause-0\",\"keyword\":\"MUST\",\"actor\":\"red-cup-engineering/weiqi-engine\",\"statement\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\",\"test\":\"Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.\",\"backedBy\":[\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:identity\"]},{\"id\":\"clause-1\",\"keyword\":\"MUST\",\"actor\":\"red-cup-engineering/weiqi-engine\",\"statement\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\",\"test\":\"Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.\",\"backedBy\":[\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:refusal\"]}]}],\"implementations\":[],\"openQuestions\":[],\"laws\":[],\"standards\":[],\"provenance\":{\"derivedAt\":\"2026-11-05T00:00:00Z\",\"derivedBy\":\"Hai Xudi, author qualification; no independent review asserted\",\"derivedFrom\":[\"weiqi-replay-state-references@ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\"]}}",
+        "digest": "sha256:64b7762236bb613fb32a33a80bc6a62b93daee0731eca5a6695d35c7ee2511f2"
+      },
+      {
+        "kind": "architecture",
+        "text": "{\"type\":\"ArchitectureDescriptionCandidate\",\"version\":1,\"identity\":{\"id\":\"weiqi-replay-state-architecture\",\"title\":\"Original replay state references\",\"revision\":\"2026-11-05-result-references\",\"owner\":\"red-cup-engineering/weiqi-engine\",\"status\":\"candidate\"},\"standard\":{\"designation\":\"ISO/IEC/IEEE 42010\",\"edition\":\"2022\",\"applicability\":\"Responsibility and dependency description for command-history source integration\",\"conformance\":\"unassessed\"},\"system\":{\"name\":\"Weiqi incremental replay\",\"description\":\"Weiqi owns rule and immutable session state. The original Code adapter retains bounded references to observed successful source results; detached observations never replace cache-key identity.\",\"sourceIds\":[\"requirement\",\"specification\"]},\"upstream\":{\"requirementsSourceId\":\"requirement\",\"specificationSourceId\":\"specification\"},\"sources\":[{\"id\":\"requirement\",\"locator\":\"task:2026-11-05-coherent-software-family\",\"revision\":\"ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\"},{\"id\":\"specification\",\"locator\":\"generated:weiqi-replay-state-references-spec\",\"revision\":\"ni:///sha-256;yHthBiOiGdL3T4XWGrhXi9J0Mc1TPASC6y5X3rnidvU\"}],\"stakeholders\":[{\"id\":\"game-author\",\"name\":\"561 Group game author and players\",\"concernIds\":[\"concern-a\",\"concern-b\"]}],\"concerns\":[{\"id\":\"concern-a\",\"statement\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\",\"sourceIds\":[\"requirement\",\"specification\"],\"requirementCellIds\":[\"weiqi-replay-state-references:identity\"],\"specificationClauseIds\":[\"clause-0\"]},{\"id\":\"concern-b\",\"statement\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\",\"sourceIds\":[\"requirement\",\"specification\"],\"requirementCellIds\":[\"weiqi-replay-state-references:refusal\"],\"specificationClauseIds\":[\"clause-1\"]}],\"viewpoints\":[{\"id\":\"functional\",\"name\":\"Functional\",\"concernIds\":[\"concern-a\",\"concern-b\"],\"modelKinds\":[\"component\"],\"method\":\"Source-observed deterministic command history and game-boundary save projection\"}],\"views\":[{\"id\":\"functional-view\",\"name\":\"Functional view\",\"viewpointId\":\"functional\",\"modelIds\":[\"model-a\",\"model-a-alt\",\"model-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"models\":[{\"id\":\"model-a\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-a\"],\"sourceIds\":[\"requirement\",\"specification\"]},{\"id\":\"model-a-alt\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-a\"],\"sourceIds\":[\"requirement\",\"specification\"]},{\"id\":\"model-b\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"correspondences\":[],\"decisions\":[{\"id\":\"choice\",\"statement\":\"Extend the original factory receiver with explicit bounded argument-reference metadata; preserve the Weiqi API and session owner.\",\"rationale\":\"Cloning a state before passing it to extend loses incremental session identity even when the JSON is equal.\",\"alternatives\":[\"Rewrite Weiqi into unary stateless wrappers and replay every historical move.\"],\"concernIds\":[\"concern-a\",\"concern-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"openQuestions\":[]}",
+        "digest": "sha256:5af48004efa0cc177144951d9071edb03f34a0f7c6d57453fae8bd26be34874c"
+      }
+    ],
+    "design": {
+      "components": [
+        {
+          "dependencyIds": [],
+          "id": "replay-engine",
+          "layer": "code",
+          "owner": "red-cup-engineering/weiqi-engine",
+          "providedPorts": [],
+          "requiredPorts": [],
+          "responsibility": "Preserve original state identity during deterministic game replay"
+        }
+      ],
+      "connections": [],
+      "openQuestions": [],
+      "traceability": [
+        {
+          "architectureModelIds": [
+            "model-a"
+          ],
+          "designElementIds": [
+            "replay-engine"
+          ],
+          "requirementCellId": "weiqi-replay-state-references:identity",
+          "specificationClauseIds": [
+            "clause-0"
+          ]
+        },
+        {
+          "architectureModelIds": [
+            "model-b"
+          ],
+          "designElementIds": [
+            "replay-engine"
+          ],
+          "requirementCellId": "weiqi-replay-state-references:refusal",
+          "specificationClauseIds": [
+            "clause-1"
+          ]
+        }
+      ]
+    },
+    "admitted": false,
+    "proof": "unreceived"
+  },
+  "low": {
+    "type": "EngineeringDesignCandidate",
+    "stage": "low-level",
+    "sources": [
+      {
+        "kind": "requirement",
+        "text": "{\"kind\":\"requirement\",\"id\":\"weiqi-replay-state-references\",\"met-when\":[{\"cell\":\"weiqi-replay-state-references:identity\",\"target\":\"held\",\"says\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\"},{\"cell\":\"weiqi-replay-state-references:refusal\",\"target\":\"held\",\"says\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\"}]}",
+        "digest": "sha256:3629da908743e8e2b33ace2bd226236e0ee364f1a9cce23d5aa77b966f61f9a6"
+      },
+      {
+        "kind": "specification",
+        "text": "{\"identity\":{\"version\":\"0.1.0\",\"stability\":\"draft\",\"status\":\"draft\",\"date-created\":\"2026-11-05\",\"id\":\"weiqi-replay-state-references-spec\",\"title\":\"Weiqi replay state identity\",\"seat\":\"red-cup-engineering/weiqi-engine\",\"carrier\":\"src/replay.mjs\",\"authors\":[\"Hai Xudi\"],\"profile\":\"prose\"},\"whatThisIs\":\"The specification of Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w).\",\"topics\":[{\"heading\":\"Source-owned requirement conditions\",\"body\":\"{{clause:clause-0}}\\n\\n{{clause:clause-1}}\",\"clauses\":[{\"id\":\"clause-0\",\"keyword\":\"MUST\",\"actor\":\"red-cup-engineering/weiqi-engine\",\"statement\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\",\"test\":\"Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.\",\"backedBy\":[\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:identity\"]},{\"id\":\"clause-1\",\"keyword\":\"MUST\",\"actor\":\"red-cup-engineering/weiqi-engine\",\"statement\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\",\"test\":\"Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.\",\"backedBy\":[\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:refusal\"]}]}],\"implementations\":[],\"openQuestions\":[],\"laws\":[],\"standards\":[],\"provenance\":{\"derivedAt\":\"2026-11-05T00:00:00Z\",\"derivedBy\":\"Hai Xudi, author qualification; no independent review asserted\",\"derivedFrom\":[\"weiqi-replay-state-references@ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\"]}}",
+        "digest": "sha256:64b7762236bb613fb32a33a80bc6a62b93daee0731eca5a6695d35c7ee2511f2"
+      },
+      {
+        "kind": "architecture",
+        "text": "{\"type\":\"ArchitectureDescriptionCandidate\",\"version\":1,\"identity\":{\"id\":\"weiqi-replay-state-architecture\",\"title\":\"Original replay state references\",\"revision\":\"2026-11-05-result-references\",\"owner\":\"red-cup-engineering/weiqi-engine\",\"status\":\"candidate\"},\"standard\":{\"designation\":\"ISO/IEC/IEEE 42010\",\"edition\":\"2022\",\"applicability\":\"Responsibility and dependency description for command-history source integration\",\"conformance\":\"unassessed\"},\"system\":{\"name\":\"Weiqi incremental replay\",\"description\":\"Weiqi owns rule and immutable session state. The original Code adapter retains bounded references to observed successful source results; detached observations never replace cache-key identity.\",\"sourceIds\":[\"requirement\",\"specification\"]},\"upstream\":{\"requirementsSourceId\":\"requirement\",\"specificationSourceId\":\"specification\"},\"sources\":[{\"id\":\"requirement\",\"locator\":\"task:2026-11-05-coherent-software-family\",\"revision\":\"ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\"},{\"id\":\"specification\",\"locator\":\"generated:weiqi-replay-state-references-spec\",\"revision\":\"ni:///sha-256;yHthBiOiGdL3T4XWGrhXi9J0Mc1TPASC6y5X3rnidvU\"}],\"stakeholders\":[{\"id\":\"game-author\",\"name\":\"561 Group game author and players\",\"concernIds\":[\"concern-a\",\"concern-b\"]}],\"concerns\":[{\"id\":\"concern-a\",\"statement\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\",\"sourceIds\":[\"requirement\",\"specification\"],\"requirementCellIds\":[\"weiqi-replay-state-references:identity\"],\"specificationClauseIds\":[\"clause-0\"]},{\"id\":\"concern-b\",\"statement\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\",\"sourceIds\":[\"requirement\",\"specification\"],\"requirementCellIds\":[\"weiqi-replay-state-references:refusal\"],\"specificationClauseIds\":[\"clause-1\"]}],\"viewpoints\":[{\"id\":\"functional\",\"name\":\"Functional\",\"concernIds\":[\"concern-a\",\"concern-b\"],\"modelKinds\":[\"component\"],\"method\":\"Source-observed deterministic command history and game-boundary save projection\"}],\"views\":[{\"id\":\"functional-view\",\"name\":\"Functional view\",\"viewpointId\":\"functional\",\"modelIds\":[\"model-a\",\"model-a-alt\",\"model-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"models\":[{\"id\":\"model-a\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-a\"],\"sourceIds\":[\"requirement\",\"specification\"]},{\"id\":\"model-a-alt\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-a\"],\"sourceIds\":[\"requirement\",\"specification\"]},{\"id\":\"model-b\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"correspondences\":[],\"decisions\":[{\"id\":\"choice\",\"statement\":\"Extend the original factory receiver with explicit bounded argument-reference metadata; preserve the Weiqi API and session owner.\",\"rationale\":\"Cloning a state before passing it to extend loses incremental session identity even when the JSON is equal.\",\"alternatives\":[\"Rewrite Weiqi into unary stateless wrappers and replay every historical move.\"],\"concernIds\":[\"concern-a\",\"concern-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"openQuestions\":[]}",
+        "digest": "sha256:5af48004efa0cc177144951d9071edb03f34a0f7c6d57453fae8bd26be34874c"
+      },
+      {
+        "kind": "high-level",
+        "text": "{\"type\":\"EngineeringDesignCandidate\",\"stage\":\"high-level\",\"sources\":[{\"kind\":\"requirement\",\"text\":\"{\\\"kind\\\":\\\"requirement\\\",\\\"id\\\":\\\"weiqi-replay-state-references\\\",\\\"met-when\\\":[{\\\"cell\\\":\\\"weiqi-replay-state-references:identity\\\",\\\"target\\\":\\\"held\\\",\\\"says\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\"},{\\\"cell\\\":\\\"weiqi-replay-state-references:refusal\\\",\\\"target\\\":\\\"held\\\",\\\"says\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\"}]}\",\"digest\":\"sha256:3629da908743e8e2b33ace2bd226236e0ee364f1a9cce23d5aa77b966f61f9a6\"},{\"kind\":\"specification\",\"text\":\"{\\\"identity\\\":{\\\"version\\\":\\\"0.1.0\\\",\\\"stability\\\":\\\"draft\\\",\\\"status\\\":\\\"draft\\\",\\\"date-created\\\":\\\"2026-11-05\\\",\\\"id\\\":\\\"weiqi-replay-state-references-spec\\\",\\\"title\\\":\\\"Weiqi replay state identity\\\",\\\"seat\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"carrier\\\":\\\"src/replay.mjs\\\",\\\"authors\\\":[\\\"Hai Xudi\\\"],\\\"profile\\\":\\\"prose\\\"},\\\"whatThisIs\\\":\\\"The specification of Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w).\\\",\\\"topics\\\":[{\\\"heading\\\":\\\"Source-owned requirement conditions\\\",\\\"body\\\":\\\"{{clause:clause-0}}\\\\n\\\\n{{clause:clause-1}}\\\",\\\"clauses\\\":[{\\\"id\\\":\\\"clause-0\\\",\\\"keyword\\\":\\\"MUST\\\",\\\"actor\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"statement\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\",\\\"test\\\":\\\"Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.\\\",\\\"backedBy\\\":[\\\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:identity\\\"]},{\\\"id\\\":\\\"clause-1\\\",\\\"keyword\\\":\\\"MUST\\\",\\\"actor\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"statement\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\",\\\"test\\\":\\\"Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.\\\",\\\"backedBy\\\":[\\\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:refusal\\\"]}]}],\\\"implementations\\\":[],\\\"openQuestions\\\":[],\\\"laws\\\":[],\\\"standards\\\":[],\\\"provenance\\\":{\\\"derivedAt\\\":\\\"2026-11-05T00:00:00Z\\\",\\\"derivedBy\\\":\\\"Hai Xudi, author qualification; no independent review asserted\\\",\\\"derivedFrom\\\":[\\\"weiqi-replay-state-references@ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\\\"]}}\",\"digest\":\"sha256:64b7762236bb613fb32a33a80bc6a62b93daee0731eca5a6695d35c7ee2511f2\"},{\"kind\":\"architecture\",\"text\":\"{\\\"type\\\":\\\"ArchitectureDescriptionCandidate\\\",\\\"version\\\":1,\\\"identity\\\":{\\\"id\\\":\\\"weiqi-replay-state-architecture\\\",\\\"title\\\":\\\"Original replay state references\\\",\\\"revision\\\":\\\"2026-11-05-result-references\\\",\\\"owner\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"status\\\":\\\"candidate\\\"},\\\"standard\\\":{\\\"designation\\\":\\\"ISO/IEC/IEEE 42010\\\",\\\"edition\\\":\\\"2022\\\",\\\"applicability\\\":\\\"Responsibility and dependency description for command-history source integration\\\",\\\"conformance\\\":\\\"unassessed\\\"},\\\"system\\\":{\\\"name\\\":\\\"Weiqi incremental replay\\\",\\\"description\\\":\\\"Weiqi owns rule and immutable session state. The original Code adapter retains bounded references to observed successful source results; detached observations never replace cache-key identity.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},\\\"upstream\\\":{\\\"requirementsSourceId\\\":\\\"requirement\\\",\\\"specificationSourceId\\\":\\\"specification\\\"},\\\"sources\\\":[{\\\"id\\\":\\\"requirement\\\",\\\"locator\\\":\\\"task:2026-11-05-coherent-software-family\\\",\\\"revision\\\":\\\"ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\\\"},{\\\"id\\\":\\\"specification\\\",\\\"locator\\\":\\\"generated:weiqi-replay-state-references-spec\\\",\\\"revision\\\":\\\"ni:///sha-256;yHthBiOiGdL3T4XWGrhXi9J0Mc1TPASC6y5X3rnidvU\\\"}],\\\"stakeholders\\\":[{\\\"id\\\":\\\"game-author\\\",\\\"name\\\":\\\"561 Group game author and players\\\",\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"]}],\\\"concerns\\\":[{\\\"id\\\":\\\"concern-a\\\",\\\"statement\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"],\\\"requirementCellIds\\\":[\\\"weiqi-replay-state-references:identity\\\"],\\\"specificationClauseIds\\\":[\\\"clause-0\\\"]},{\\\"id\\\":\\\"concern-b\\\",\\\"statement\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"],\\\"requirementCellIds\\\":[\\\"weiqi-replay-state-references:refusal\\\"],\\\"specificationClauseIds\\\":[\\\"clause-1\\\"]}],\\\"viewpoints\\\":[{\\\"id\\\":\\\"functional\\\",\\\"name\\\":\\\"Functional\\\",\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"],\\\"modelKinds\\\":[\\\"component\\\"],\\\"method\\\":\\\"Source-observed deterministic command history and game-boundary save projection\\\"}],\\\"views\\\":[{\\\"id\\\":\\\"functional-view\\\",\\\"name\\\":\\\"Functional view\\\",\\\"viewpointId\\\":\\\"functional\\\",\\\"modelIds\\\":[\\\"model-a\\\",\\\"model-a-alt\\\",\\\"model-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"models\\\":[{\\\"id\\\":\\\"model-a\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-a\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},{\\\"id\\\":\\\"model-a-alt\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-a\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},{\\\"id\\\":\\\"model-b\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"correspondences\\\":[],\\\"decisions\\\":[{\\\"id\\\":\\\"choice\\\",\\\"statement\\\":\\\"Extend the original factory receiver with explicit bounded argument-reference metadata; preserve the Weiqi API and session owner.\\\",\\\"rationale\\\":\\\"Cloning a state before passing it to extend loses incremental session identity even when the JSON is equal.\\\",\\\"alternatives\\\":[\\\"Rewrite Weiqi into unary stateless wrappers and replay every historical move.\\\"],\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"openQuestions\\\":[]}\",\"digest\":\"sha256:5af48004efa0cc177144951d9071edb03f34a0f7c6d57453fae8bd26be34874c\"}],\"design\":{\"components\":[{\"dependencyIds\":[],\"id\":\"replay-engine\",\"layer\":\"code\",\"owner\":\"red-cup-engineering/weiqi-engine\",\"providedPorts\":[],\"requiredPorts\":[],\"responsibility\":\"Preserve original state identity during deterministic game replay\"}],\"connections\":[],\"openQuestions\":[],\"traceability\":[{\"architectureModelIds\":[\"model-a\"],\"designElementIds\":[\"replay-engine\"],\"requirementCellId\":\"weiqi-replay-state-references:identity\",\"specificationClauseIds\":[\"clause-0\"]},{\"architectureModelIds\":[\"model-b\"],\"designElementIds\":[\"replay-engine\"],\"requirementCellId\":\"weiqi-replay-state-references:refusal\",\"specificationClauseIds\":[\"clause-1\"]}]},\"admitted\":false,\"proof\":\"unreceived\"}",
+        "digest": "sha256:0018460971c23a59c5f9e920065397a6ef5fefe0900463f0085ae971545a251f"
+      }
+    ],
+    "design": {
+      "openQuestions": [],
+      "operations": [
+        {
+          "acceptanceObligations": [
+            "Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.",
+            "Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately."
+          ],
+          "behavior": "Construct a fresh Weiqi engine and execute declared own methods. Explicit reference metadata binds null argument slots to prior successful raw states without cloning, while observations remain detached canonical JSON.",
+          "componentId": "replay-engine",
+          "effectBoundaries": [
+            "In-memory game only; no persistence, browser, network or cleanup protocol."
+          ],
+          "exportName": "createWeiqiGameEngine",
+          "failureCases": [
+            "Invalid references refuse outside source-error capture. Illegal moves and configuration mismatches retain the original game errors. Capturing a source error does not imply rollback."
+          ],
+          "id": "replay-engine",
+          "inputSchemaJson": "{\"type\":\"object\",\"required\":[\"arguments\",\"calls\"],\"additionalProperties\":false,\"properties\":{\"arguments\":{\"type\":\"array\",\"maxItems\":2},\"calls\":{\"type\":\"array\",\"maxItems\":16,\"items\":{\"type\":\"object\"}}},\"x-javascript-factory\":{\"methods\":[\"initialPosition\",\"extend\"],\"maxCalls\":16,\"maxArguments\":2,\"resultReferences\":{\"maxPathLength\":1}}}",
+          "module": "src/replay.mjs",
+          "outputSchemaJson": "{\"type\":\"array\",\"maxItems\":16,\"items\":{\"type\":\"object\",\"required\":[\"status\"],\"properties\":{\"status\":{\"enum\":[\"returned\",\"threw\"]}}}}",
+          "postconditions": [
+            "Accepted commands use the original incremental session state. Older successful states remain valid independent branch points. Observation snapshots do not change after later calls."
+          ],
+          "preconditions": [
+            "Only earlier successful nonvoid results in this invocation may be referenced. Paths address existing own enumerable data properties and cannot traverse getters, proxies or prototypes."
+          ],
+          "resourceBounds": [
+            "At most 16 calls, 2 arguments per call and one path component. Original JSON request/observation bounds apply."
+          ]
+        }
+      ],
+      "traceability": [
+        {
+          "architectureModelIds": [
+            "model-a"
+          ],
+          "designElementIds": [
+            "replay-engine"
+          ],
+          "requirementCellId": "weiqi-replay-state-references:identity",
+          "specificationClauseIds": [
+            "clause-0"
+          ]
+        },
+        {
+          "architectureModelIds": [
+            "model-b"
+          ],
+          "designElementIds": [
+            "replay-engine"
+          ],
+          "requirementCellId": "weiqi-replay-state-references:refusal",
+          "specificationClauseIds": [
+            "clause-1"
+          ]
+        }
+      ]
+    },
+    "admitted": false,
+    "proof": "unreceived"
+  },
+  "plan": {
+    "type": "EngineeringDesignDerivationPlan",
+    "stage": "low-level",
+    "sources": [
+      {
+        "kind": "requirement",
+        "text": "{\"kind\":\"requirement\",\"id\":\"weiqi-replay-state-references\",\"met-when\":[{\"cell\":\"weiqi-replay-state-references:identity\",\"target\":\"held\",\"says\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\"},{\"cell\":\"weiqi-replay-state-references:refusal\",\"target\":\"held\",\"says\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\"}]}",
+        "digest": "sha256:3629da908743e8e2b33ace2bd226236e0ee364f1a9cce23d5aa77b966f61f9a6"
+      },
+      {
+        "kind": "specification",
+        "text": "{\"identity\":{\"version\":\"0.1.0\",\"stability\":\"draft\",\"status\":\"draft\",\"date-created\":\"2026-11-05\",\"id\":\"weiqi-replay-state-references-spec\",\"title\":\"Weiqi replay state identity\",\"seat\":\"red-cup-engineering/weiqi-engine\",\"carrier\":\"src/replay.mjs\",\"authors\":[\"Hai Xudi\"],\"profile\":\"prose\"},\"whatThisIs\":\"The specification of Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w).\",\"topics\":[{\"heading\":\"Source-owned requirement conditions\",\"body\":\"{{clause:clause-0}}\\n\\n{{clause:clause-1}}\",\"clauses\":[{\"id\":\"clause-0\",\"keyword\":\"MUST\",\"actor\":\"red-cup-engineering/weiqi-engine\",\"statement\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\",\"test\":\"Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.\",\"backedBy\":[\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:identity\"]},{\"id\":\"clause-1\",\"keyword\":\"MUST\",\"actor\":\"red-cup-engineering/weiqi-engine\",\"statement\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\",\"test\":\"Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.\",\"backedBy\":[\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:refusal\"]}]}],\"implementations\":[],\"openQuestions\":[],\"laws\":[],\"standards\":[],\"provenance\":{\"derivedAt\":\"2026-11-05T00:00:00Z\",\"derivedBy\":\"Hai Xudi, author qualification; no independent review asserted\",\"derivedFrom\":[\"weiqi-replay-state-references@ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\"]}}",
+        "digest": "sha256:64b7762236bb613fb32a33a80bc6a62b93daee0731eca5a6695d35c7ee2511f2"
+      },
+      {
+        "kind": "architecture",
+        "text": "{\"type\":\"ArchitectureDescriptionCandidate\",\"version\":1,\"identity\":{\"id\":\"weiqi-replay-state-architecture\",\"title\":\"Original replay state references\",\"revision\":\"2026-11-05-result-references\",\"owner\":\"red-cup-engineering/weiqi-engine\",\"status\":\"candidate\"},\"standard\":{\"designation\":\"ISO/IEC/IEEE 42010\",\"edition\":\"2022\",\"applicability\":\"Responsibility and dependency description for command-history source integration\",\"conformance\":\"unassessed\"},\"system\":{\"name\":\"Weiqi incremental replay\",\"description\":\"Weiqi owns rule and immutable session state. The original Code adapter retains bounded references to observed successful source results; detached observations never replace cache-key identity.\",\"sourceIds\":[\"requirement\",\"specification\"]},\"upstream\":{\"requirementsSourceId\":\"requirement\",\"specificationSourceId\":\"specification\"},\"sources\":[{\"id\":\"requirement\",\"locator\":\"task:2026-11-05-coherent-software-family\",\"revision\":\"ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\"},{\"id\":\"specification\",\"locator\":\"generated:weiqi-replay-state-references-spec\",\"revision\":\"ni:///sha-256;yHthBiOiGdL3T4XWGrhXi9J0Mc1TPASC6y5X3rnidvU\"}],\"stakeholders\":[{\"id\":\"game-author\",\"name\":\"561 Group game author and players\",\"concernIds\":[\"concern-a\",\"concern-b\"]}],\"concerns\":[{\"id\":\"concern-a\",\"statement\":\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\",\"sourceIds\":[\"requirement\",\"specification\"],\"requirementCellIds\":[\"weiqi-replay-state-references:identity\"],\"specificationClauseIds\":[\"clause-0\"]},{\"id\":\"concern-b\",\"statement\":\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\",\"sourceIds\":[\"requirement\",\"specification\"],\"requirementCellIds\":[\"weiqi-replay-state-references:refusal\"],\"specificationClauseIds\":[\"clause-1\"]}],\"viewpoints\":[{\"id\":\"functional\",\"name\":\"Functional\",\"concernIds\":[\"concern-a\",\"concern-b\"],\"modelKinds\":[\"component\"],\"method\":\"Source-observed deterministic command history and game-boundary save projection\"}],\"views\":[{\"id\":\"functional-view\",\"name\":\"Functional view\",\"viewpointId\":\"functional\",\"modelIds\":[\"model-a\",\"model-a-alt\",\"model-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"models\":[{\"id\":\"model-a\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-a\"],\"sourceIds\":[\"requirement\",\"specification\"]},{\"id\":\"model-a-alt\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-a\"],\"sourceIds\":[\"requirement\",\"specification\"]},{\"id\":\"model-b\",\"kind\":\"component\",\"content\":\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\",\"concernIds\":[\"concern-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"correspondences\":[],\"decisions\":[{\"id\":\"choice\",\"statement\":\"Extend the original factory receiver with explicit bounded argument-reference metadata; preserve the Weiqi API and session owner.\",\"rationale\":\"Cloning a state before passing it to extend loses incremental session identity even when the JSON is equal.\",\"alternatives\":[\"Rewrite Weiqi into unary stateless wrappers and replay every historical move.\"],\"concernIds\":[\"concern-a\",\"concern-b\"],\"sourceIds\":[\"requirement\",\"specification\"]}],\"openQuestions\":[]}",
+        "digest": "sha256:5af48004efa0cc177144951d9071edb03f34a0f7c6d57453fae8bd26be34874c"
+      },
+      {
+        "kind": "high-level",
+        "text": "{\"type\":\"EngineeringDesignCandidate\",\"stage\":\"high-level\",\"sources\":[{\"kind\":\"requirement\",\"text\":\"{\\\"kind\\\":\\\"requirement\\\",\\\"id\\\":\\\"weiqi-replay-state-references\\\",\\\"met-when\\\":[{\\\"cell\\\":\\\"weiqi-replay-state-references:identity\\\",\\\"target\\\":\\\"held\\\",\\\"says\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\"},{\\\"cell\\\":\\\"weiqi-replay-state-references:refusal\\\",\\\"target\\\":\\\"held\\\",\\\"says\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\"}]}\",\"digest\":\"sha256:3629da908743e8e2b33ace2bd226236e0ee364f1a9cce23d5aa77b966f61f9a6\"},{\"kind\":\"specification\",\"text\":\"{\\\"identity\\\":{\\\"version\\\":\\\"0.1.0\\\",\\\"stability\\\":\\\"draft\\\",\\\"status\\\":\\\"draft\\\",\\\"date-created\\\":\\\"2026-11-05\\\",\\\"id\\\":\\\"weiqi-replay-state-references-spec\\\",\\\"title\\\":\\\"Weiqi replay state identity\\\",\\\"seat\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"carrier\\\":\\\"src/replay.mjs\\\",\\\"authors\\\":[\\\"Hai Xudi\\\"],\\\"profile\\\":\\\"prose\\\"},\\\"whatThisIs\\\":\\\"The specification of Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w).\\\",\\\"topics\\\":[{\\\"heading\\\":\\\"Source-owned requirement conditions\\\",\\\"body\\\":\\\"{{clause:clause-0}}\\\\n\\\\n{{clause:clause-1}}\\\",\\\"clauses\\\":[{\\\"id\\\":\\\"clause-0\\\",\\\"keyword\\\":\\\"MUST\\\",\\\"actor\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"statement\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\",\\\"test\\\":\\\"Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.\\\",\\\"backedBy\\\":[\\\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:identity\\\"]},{\\\"id\\\":\\\"clause-1\\\",\\\"keyword\\\":\\\"MUST\\\",\\\"actor\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"statement\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\",\\\"test\\\":\\\"Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.\\\",\\\"backedBy\\\":[\\\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:refusal\\\"]}]}],\\\"implementations\\\":[],\\\"openQuestions\\\":[],\\\"laws\\\":[],\\\"standards\\\":[],\\\"provenance\\\":{\\\"derivedAt\\\":\\\"2026-11-05T00:00:00Z\\\",\\\"derivedBy\\\":\\\"Hai Xudi, author qualification; no independent review asserted\\\",\\\"derivedFrom\\\":[\\\"weiqi-replay-state-references@ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\\\"]}}\",\"digest\":\"sha256:64b7762236bb613fb32a33a80bc6a62b93daee0731eca5a6695d35c7ee2511f2\"},{\"kind\":\"architecture\",\"text\":\"{\\\"type\\\":\\\"ArchitectureDescriptionCandidate\\\",\\\"version\\\":1,\\\"identity\\\":{\\\"id\\\":\\\"weiqi-replay-state-architecture\\\",\\\"title\\\":\\\"Original replay state references\\\",\\\"revision\\\":\\\"2026-11-05-result-references\\\",\\\"owner\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"status\\\":\\\"candidate\\\"},\\\"standard\\\":{\\\"designation\\\":\\\"ISO/IEC/IEEE 42010\\\",\\\"edition\\\":\\\"2022\\\",\\\"applicability\\\":\\\"Responsibility and dependency description for command-history source integration\\\",\\\"conformance\\\":\\\"unassessed\\\"},\\\"system\\\":{\\\"name\\\":\\\"Weiqi incremental replay\\\",\\\"description\\\":\\\"Weiqi owns rule and immutable session state. The original Code adapter retains bounded references to observed successful source results; detached observations never replace cache-key identity.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},\\\"upstream\\\":{\\\"requirementsSourceId\\\":\\\"requirement\\\",\\\"specificationSourceId\\\":\\\"specification\\\"},\\\"sources\\\":[{\\\"id\\\":\\\"requirement\\\",\\\"locator\\\":\\\"task:2026-11-05-coherent-software-family\\\",\\\"revision\\\":\\\"ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\\\"},{\\\"id\\\":\\\"specification\\\",\\\"locator\\\":\\\"generated:weiqi-replay-state-references-spec\\\",\\\"revision\\\":\\\"ni:///sha-256;yHthBiOiGdL3T4XWGrhXi9J0Mc1TPASC6y5X3rnidvU\\\"}],\\\"stakeholders\\\":[{\\\"id\\\":\\\"game-author\\\",\\\"name\\\":\\\"561 Group game author and players\\\",\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"]}],\\\"concerns\\\":[{\\\"id\\\":\\\"concern-a\\\",\\\"statement\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"],\\\"requirementCellIds\\\":[\\\"weiqi-replay-state-references:identity\\\"],\\\"specificationClauseIds\\\":[\\\"clause-0\\\"]},{\\\"id\\\":\\\"concern-b\\\",\\\"statement\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"],\\\"requirementCellIds\\\":[\\\"weiqi-replay-state-references:refusal\\\"],\\\"specificationClauseIds\\\":[\\\"clause-1\\\"]}],\\\"viewpoints\\\":[{\\\"id\\\":\\\"functional\\\",\\\"name\\\":\\\"Functional\\\",\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"],\\\"modelKinds\\\":[\\\"component\\\"],\\\"method\\\":\\\"Source-observed deterministic command history and game-boundary save projection\\\"}],\\\"views\\\":[{\\\"id\\\":\\\"functional-view\\\",\\\"name\\\":\\\"Functional view\\\",\\\"viewpointId\\\":\\\"functional\\\",\\\"modelIds\\\":[\\\"model-a\\\",\\\"model-a-alt\\\",\\\"model-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"models\\\":[{\\\"id\\\":\\\"model-a\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-a\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},{\\\"id\\\":\\\"model-a-alt\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-a\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},{\\\"id\\\":\\\"model-b\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"correspondences\\\":[],\\\"decisions\\\":[{\\\"id\\\":\\\"choice\\\",\\\"statement\\\":\\\"Extend the original factory receiver with explicit bounded argument-reference metadata; preserve the Weiqi API and session owner.\\\",\\\"rationale\\\":\\\"Cloning a state before passing it to extend loses incremental session identity even when the JSON is equal.\\\",\\\"alternatives\\\":[\\\"Rewrite Weiqi into unary stateless wrappers and replay every historical move.\\\"],\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"openQuestions\\\":[]}\",\"digest\":\"sha256:5af48004efa0cc177144951d9071edb03f34a0f7c6d57453fae8bd26be34874c\"}],\"design\":{\"components\":[{\"dependencyIds\":[],\"id\":\"replay-engine\",\"layer\":\"code\",\"owner\":\"red-cup-engineering/weiqi-engine\",\"providedPorts\":[],\"requiredPorts\":[],\"responsibility\":\"Preserve original state identity during deterministic game replay\"}],\"connections\":[],\"openQuestions\":[],\"traceability\":[{\"architectureModelIds\":[\"model-a\"],\"designElementIds\":[\"replay-engine\"],\"requirementCellId\":\"weiqi-replay-state-references:identity\",\"specificationClauseIds\":[\"clause-0\"]},{\"architectureModelIds\":[\"model-b\"],\"designElementIds\":[\"replay-engine\"],\"requirementCellId\":\"weiqi-replay-state-references:refusal\",\"specificationClauseIds\":[\"clause-1\"]}]},\"admitted\":false,\"proof\":\"unreceived\"}",
+        "digest": "sha256:0018460971c23a59c5f9e920065397a6ef5fefe0900463f0085ae971545a251f"
+      }
+    ],
+    "request": {
+      "taskClass": "code-fabrication",
+      "objective": "Derive low-level design",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Derive only the requested engineering design candidate from the complete original source cut. Retain every original requirement, explicit uncertainty and source identity. Follow the supplied response schema. A candidate is not adoption, proof, fabrication, installation or operation. Return one complete JSON design value. Exact source identity and upstream uncertainty remain in the complete source envelope; keep openQuestions concise and retain relevant blockers without repeating entire source records or source metadata. For high-level design use unique component IDs, acyclic dependencies on same or lower Data, Code, Networking, Systems layers, provider-to-consumer port connections with exactly one provider per required port, and one exact original Requirement-cell trace row covering every component. For low-level design use the exact component IDs and per-cell allocations from the supplied high-level candidate, cover every high-level component, and use unique operation IDs and module/export pairs. Every module is a concrete prospective POSIX relative path starting src/ and ending .mjs, with no backslash or empty, dot or dotdot segment. Every exportName is a whole ASCII identifier spelling: letter, underscore or dollar first, then letters, digits, underscores or dollars. Choose concrete NEW candidate module/export names where new work is required; this does not assert that those interfaces already exist. Retain unresolved existing bindings in openQuestions, never as placeholder prose in module or exportName. Input/output schema fields contain JSON text decoding to an object or boolean. Each trace row names exactly its original Specification clauses, actual Architecture model IDs and selected design elements; low-level operation component IDs for that row must equal the high-level component allocation as a set. Keep all declared behavior, failure, bound, effect and acceptance fields; unknown bounds or mechanisms remain explicit unqualified blockers and grant no effect authority. The receiver checks structural correspondence only; semantic refinement, source adoption, Proof and installed operation remain separately unreceived."
+        },
+        {
+          "role": "user",
+          "content": "{\"stage\":\"low-level\",\"sources\":[{\"kind\":\"requirement\",\"text\":\"{\\\"kind\\\":\\\"requirement\\\",\\\"id\\\":\\\"weiqi-replay-state-references\\\",\\\"met-when\\\":[{\\\"cell\\\":\\\"weiqi-replay-state-references:identity\\\",\\\"target\\\":\\\"held\\\",\\\"says\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\"},{\\\"cell\\\":\\\"weiqi-replay-state-references:refusal\\\",\\\"target\\\":\\\"held\\\",\\\"says\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\"}]}\",\"digest\":\"sha256:3629da908743e8e2b33ace2bd226236e0ee364f1a9cce23d5aa77b966f61f9a6\"},{\"kind\":\"specification\",\"text\":\"{\\\"identity\\\":{\\\"version\\\":\\\"0.1.0\\\",\\\"stability\\\":\\\"draft\\\",\\\"status\\\":\\\"draft\\\",\\\"date-created\\\":\\\"2026-11-05\\\",\\\"id\\\":\\\"weiqi-replay-state-references-spec\\\",\\\"title\\\":\\\"Weiqi replay state identity\\\",\\\"seat\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"carrier\\\":\\\"src/replay.mjs\\\",\\\"authors\\\":[\\\"Hai Xudi\\\"],\\\"profile\\\":\\\"prose\\\"},\\\"whatThisIs\\\":\\\"The specification of Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w).\\\",\\\"topics\\\":[{\\\"heading\\\":\\\"Source-owned requirement conditions\\\",\\\"body\\\":\\\"{{clause:clause-0}}\\\\n\\\\n{{clause:clause-1}}\\\",\\\"clauses\\\":[{\\\"id\\\":\\\"clause-0\\\",\\\"keyword\\\":\\\"MUST\\\",\\\"actor\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"statement\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\",\\\"test\\\":\\\"Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.\\\",\\\"backedBy\\\":[\\\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:identity\\\"]},{\\\"id\\\":\\\"clause-1\\\",\\\"keyword\\\":\\\"MUST\\\",\\\"actor\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"statement\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\",\\\"test\\\":\\\"Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.\\\",\\\"backedBy\\\":[\\\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:refusal\\\"]}]}],\\\"implementations\\\":[],\\\"openQuestions\\\":[],\\\"laws\\\":[],\\\"standards\\\":[],\\\"provenance\\\":{\\\"derivedAt\\\":\\\"2026-11-05T00:00:00Z\\\",\\\"derivedBy\\\":\\\"Hai Xudi, author qualification; no independent review asserted\\\",\\\"derivedFrom\\\":[\\\"weiqi-replay-state-references@ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\\\"]}}\",\"digest\":\"sha256:64b7762236bb613fb32a33a80bc6a62b93daee0731eca5a6695d35c7ee2511f2\"},{\"kind\":\"architecture\",\"text\":\"{\\\"type\\\":\\\"ArchitectureDescriptionCandidate\\\",\\\"version\\\":1,\\\"identity\\\":{\\\"id\\\":\\\"weiqi-replay-state-architecture\\\",\\\"title\\\":\\\"Original replay state references\\\",\\\"revision\\\":\\\"2026-11-05-result-references\\\",\\\"owner\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"status\\\":\\\"candidate\\\"},\\\"standard\\\":{\\\"designation\\\":\\\"ISO/IEC/IEEE 42010\\\",\\\"edition\\\":\\\"2022\\\",\\\"applicability\\\":\\\"Responsibility and dependency description for command-history source integration\\\",\\\"conformance\\\":\\\"unassessed\\\"},\\\"system\\\":{\\\"name\\\":\\\"Weiqi incremental replay\\\",\\\"description\\\":\\\"Weiqi owns rule and immutable session state. The original Code adapter retains bounded references to observed successful source results; detached observations never replace cache-key identity.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},\\\"upstream\\\":{\\\"requirementsSourceId\\\":\\\"requirement\\\",\\\"specificationSourceId\\\":\\\"specification\\\"},\\\"sources\\\":[{\\\"id\\\":\\\"requirement\\\",\\\"locator\\\":\\\"task:2026-11-05-coherent-software-family\\\",\\\"revision\\\":\\\"ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\\\"},{\\\"id\\\":\\\"specification\\\",\\\"locator\\\":\\\"generated:weiqi-replay-state-references-spec\\\",\\\"revision\\\":\\\"ni:///sha-256;yHthBiOiGdL3T4XWGrhXi9J0Mc1TPASC6y5X3rnidvU\\\"}],\\\"stakeholders\\\":[{\\\"id\\\":\\\"game-author\\\",\\\"name\\\":\\\"561 Group game author and players\\\",\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"]}],\\\"concerns\\\":[{\\\"id\\\":\\\"concern-a\\\",\\\"statement\\\":\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"],\\\"requirementCellIds\\\":[\\\"weiqi-replay-state-references:identity\\\"],\\\"specificationClauseIds\\\":[\\\"clause-0\\\"]},{\\\"id\\\":\\\"concern-b\\\",\\\"statement\\\":\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\",\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"],\\\"requirementCellIds\\\":[\\\"weiqi-replay-state-references:refusal\\\"],\\\"specificationClauseIds\\\":[\\\"clause-1\\\"]}],\\\"viewpoints\\\":[{\\\"id\\\":\\\"functional\\\",\\\"name\\\":\\\"Functional\\\",\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"],\\\"modelKinds\\\":[\\\"component\\\"],\\\"method\\\":\\\"Source-observed deterministic command history and game-boundary save projection\\\"}],\\\"views\\\":[{\\\"id\\\":\\\"functional-view\\\",\\\"name\\\":\\\"Functional view\\\",\\\"viewpointId\\\":\\\"functional\\\",\\\"modelIds\\\":[\\\"model-a\\\",\\\"model-a-alt\\\",\\\"model-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"models\\\":[{\\\"id\\\":\\\"model-a\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-a\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},{\\\"id\\\":\\\"model-a-alt\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-a\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]},{\\\"id\\\":\\\"model-b\\\",\\\"kind\\\":\\\"component\\\",\\\"content\\\":\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\",\\\"concernIds\\\":[\\\"concern-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"correspondences\\\":[],\\\"decisions\\\":[{\\\"id\\\":\\\"choice\\\",\\\"statement\\\":\\\"Extend the original factory receiver with explicit bounded argument-reference metadata; preserve the Weiqi API and session owner.\\\",\\\"rationale\\\":\\\"Cloning a state before passing it to extend loses incremental session identity even when the JSON is equal.\\\",\\\"alternatives\\\":[\\\"Rewrite Weiqi into unary stateless wrappers and replay every historical move.\\\"],\\\"concernIds\\\":[\\\"concern-a\\\",\\\"concern-b\\\"],\\\"sourceIds\\\":[\\\"requirement\\\",\\\"specification\\\"]}],\\\"openQuestions\\\":[]}\",\"digest\":\"sha256:5af48004efa0cc177144951d9071edb03f34a0f7c6d57453fae8bd26be34874c\"},{\"kind\":\"high-level\",\"text\":\"{\\\"type\\\":\\\"EngineeringDesignCandidate\\\",\\\"stage\\\":\\\"high-level\\\",\\\"sources\\\":[{\\\"kind\\\":\\\"requirement\\\",\\\"text\\\":\\\"{\\\\\\\"kind\\\\\\\":\\\\\\\"requirement\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"weiqi-replay-state-references\\\\\\\",\\\\\\\"met-when\\\\\\\":[{\\\\\\\"cell\\\\\\\":\\\\\\\"weiqi-replay-state-references:identity\\\\\\\",\\\\\\\"target\\\\\\\":\\\\\\\"held\\\\\\\",\\\\\\\"says\\\\\\\":\\\\\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\\\\\"},{\\\\\\\"cell\\\\\\\":\\\\\\\"weiqi-replay-state-references:refusal\\\\\\\",\\\\\\\"target\\\\\\\":\\\\\\\"held\\\\\\\",\\\\\\\"says\\\\\\\":\\\\\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\\\\\"}]}\\\",\\\"digest\\\":\\\"sha256:3629da908743e8e2b33ace2bd226236e0ee364f1a9cce23d5aa77b966f61f9a6\\\"},{\\\"kind\\\":\\\"specification\\\",\\\"text\\\":\\\"{\\\\\\\"identity\\\\\\\":{\\\\\\\"version\\\\\\\":\\\\\\\"0.1.0\\\\\\\",\\\\\\\"stability\\\\\\\":\\\\\\\"draft\\\\\\\",\\\\\\\"status\\\\\\\":\\\\\\\"draft\\\\\\\",\\\\\\\"date-created\\\\\\\":\\\\\\\"2026-11-05\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"weiqi-replay-state-references-spec\\\\\\\",\\\\\\\"title\\\\\\\":\\\\\\\"Weiqi replay state identity\\\\\\\",\\\\\\\"seat\\\\\\\":\\\\\\\"red-cup-engineering/weiqi-engine\\\\\\\",\\\\\\\"carrier\\\\\\\":\\\\\\\"src/replay.mjs\\\\\\\",\\\\\\\"authors\\\\\\\":[\\\\\\\"Hai Xudi\\\\\\\"],\\\\\\\"profile\\\\\\\":\\\\\\\"prose\\\\\\\"},\\\\\\\"whatThisIs\\\\\\\":\\\\\\\"The specification of Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w).\\\\\\\",\\\\\\\"topics\\\\\\\":[{\\\\\\\"heading\\\\\\\":\\\\\\\"Source-owned requirement conditions\\\\\\\",\\\\\\\"body\\\\\\\":\\\\\\\"{{clause:clause-0}}\\\\\\\\n\\\\\\\\n{{clause:clause-1}}\\\\\\\",\\\\\\\"clauses\\\\\\\":[{\\\\\\\"id\\\\\\\":\\\\\\\"clause-0\\\\\\\",\\\\\\\"keyword\\\\\\\":\\\\\\\"MUST\\\\\\\",\\\\\\\"actor\\\\\\\":\\\\\\\"red-cup-engineering/weiqi-engine\\\\\\\",\\\\\\\"statement\\\\\\\":\\\\\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\\\\\",\\\\\\\"test\\\\\\\":\\\\\\\"Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.\\\\\\\",\\\\\\\"backedBy\\\\\\\":[\\\\\\\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:identity\\\\\\\"]},{\\\\\\\"id\\\\\\\":\\\\\\\"clause-1\\\\\\\",\\\\\\\"keyword\\\\\\\":\\\\\\\"MUST\\\\\\\",\\\\\\\"actor\\\\\\\":\\\\\\\"red-cup-engineering/weiqi-engine\\\\\\\",\\\\\\\"statement\\\\\\\":\\\\\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\\\\\",\\\\\\\"test\\\\\\\":\\\\\\\"Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.\\\\\\\",\\\\\\\"backedBy\\\\\\\":[\\\\\\\"Original Requirement weiqi-replay-state-references (ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w), cell weiqi-replay-state-references:refusal\\\\\\\"]}]}],\\\\\\\"implementations\\\\\\\":[],\\\\\\\"openQuestions\\\\\\\":[],\\\\\\\"laws\\\\\\\":[],\\\\\\\"standards\\\\\\\":[],\\\\\\\"provenance\\\\\\\":{\\\\\\\"derivedAt\\\\\\\":\\\\\\\"2026-11-05T00:00:00Z\\\\\\\",\\\\\\\"derivedBy\\\\\\\":\\\\\\\"Hai Xudi, author qualification; no independent review asserted\\\\\\\",\\\\\\\"derivedFrom\\\\\\\":[\\\\\\\"weiqi-replay-state-references@ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\\\\\\\"]}}\\\",\\\"digest\\\":\\\"sha256:64b7762236bb613fb32a33a80bc6a62b93daee0731eca5a6695d35c7ee2511f2\\\"},{\\\"kind\\\":\\\"architecture\\\",\\\"text\\\":\\\"{\\\\\\\"type\\\\\\\":\\\\\\\"ArchitectureDescriptionCandidate\\\\\\\",\\\\\\\"version\\\\\\\":1,\\\\\\\"identity\\\\\\\":{\\\\\\\"id\\\\\\\":\\\\\\\"weiqi-replay-state-architecture\\\\\\\",\\\\\\\"title\\\\\\\":\\\\\\\"Original replay state references\\\\\\\",\\\\\\\"revision\\\\\\\":\\\\\\\"2026-11-05-result-references\\\\\\\",\\\\\\\"owner\\\\\\\":\\\\\\\"red-cup-engineering/weiqi-engine\\\\\\\",\\\\\\\"status\\\\\\\":\\\\\\\"candidate\\\\\\\"},\\\\\\\"standard\\\\\\\":{\\\\\\\"designation\\\\\\\":\\\\\\\"ISO/IEC/IEEE 42010\\\\\\\",\\\\\\\"edition\\\\\\\":\\\\\\\"2022\\\\\\\",\\\\\\\"applicability\\\\\\\":\\\\\\\"Responsibility and dependency description for command-history source integration\\\\\\\",\\\\\\\"conformance\\\\\\\":\\\\\\\"unassessed\\\\\\\"},\\\\\\\"system\\\\\\\":{\\\\\\\"name\\\\\\\":\\\\\\\"Weiqi incremental replay\\\\\\\",\\\\\\\"description\\\\\\\":\\\\\\\"Weiqi owns rule and immutable session state. The original Code adapter retains bounded references to observed successful source results; detached observations never replace cache-key identity.\\\\\\\",\\\\\\\"sourceIds\\\\\\\":[\\\\\\\"requirement\\\\\\\",\\\\\\\"specification\\\\\\\"]},\\\\\\\"upstream\\\\\\\":{\\\\\\\"requirementsSourceId\\\\\\\":\\\\\\\"requirement\\\\\\\",\\\\\\\"specificationSourceId\\\\\\\":\\\\\\\"specification\\\\\\\"},\\\\\\\"sources\\\\\\\":[{\\\\\\\"id\\\\\\\":\\\\\\\"requirement\\\\\\\",\\\\\\\"locator\\\\\\\":\\\\\\\"task:2026-11-05-coherent-software-family\\\\\\\",\\\\\\\"revision\\\\\\\":\\\\\\\"ni:///sha-256;A80eN_hT9yQ_2gyLNudwtbV7nQ29rez5w-rKnFbUN4w\\\\\\\"},{\\\\\\\"id\\\\\\\":\\\\\\\"specification\\\\\\\",\\\\\\\"locator\\\\\\\":\\\\\\\"generated:weiqi-replay-state-references-spec\\\\\\\",\\\\\\\"revision\\\\\\\":\\\\\\\"ni:///sha-256;yHthBiOiGdL3T4XWGrhXi9J0Mc1TPASC6y5X3rnidvU\\\\\\\"}],\\\\\\\"stakeholders\\\\\\\":[{\\\\\\\"id\\\\\\\":\\\\\\\"game-author\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"561 Group game author and players\\\\\\\",\\\\\\\"concernIds\\\\\\\":[\\\\\\\"concern-a\\\\\\\",\\\\\\\"concern-b\\\\\\\"]}],\\\\\\\"concerns\\\\\\\":[{\\\\\\\"id\\\\\\\":\\\\\\\"concern-a\\\\\\\",\\\\\\\"statement\\\\\\\":\\\\\\\"Execute accepted replay commands against original emitted states, preserving identity-sensitive incremental replay, independent branches, exact states/events and ko rules.\\\\\\\",\\\\\\\"sourceIds\\\\\\\":[\\\\\\\"requirement\\\\\\\",\\\\\\\"specification\\\\\\\"],\\\\\\\"requirementCellIds\\\\\\\":[\\\\\\\"weiqi-replay-state-references:identity\\\\\\\"],\\\\\\\"specificationClauseIds\\\\\\\":[\\\\\\\"clause-0\\\\\\\"]},{\\\\\\\"id\\\\\\\":\\\\\\\"concern-b\\\\\\\",\\\\\\\"statement\\\\\\\":\\\\\\\"Reject game/configuration and reference mistakes without turning adapter failures into game outcomes or reusing another invocation's states.\\\\\\\",\\\\\\\"sourceIds\\\\\\\":[\\\\\\\"requirement\\\\\\\",\\\\\\\"specification\\\\\\\"],\\\\\\\"requirementCellIds\\\\\\\":[\\\\\\\"weiqi-replay-state-references:refusal\\\\\\\"],\\\\\\\"specificationClauseIds\\\\\\\":[\\\\\\\"clause-1\\\\\\\"]}],\\\\\\\"viewpoints\\\\\\\":[{\\\\\\\"id\\\\\\\":\\\\\\\"functional\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"Functional\\\\\\\",\\\\\\\"concernIds\\\\\\\":[\\\\\\\"concern-a\\\\\\\",\\\\\\\"concern-b\\\\\\\"],\\\\\\\"modelKinds\\\\\\\":[\\\\\\\"component\\\\\\\"],\\\\\\\"method\\\\\\\":\\\\\\\"Source-observed deterministic command history and game-boundary save projection\\\\\\\"}],\\\\\\\"views\\\\\\\":[{\\\\\\\"id\\\\\\\":\\\\\\\"functional-view\\\\\\\",\\\\\\\"name\\\\\\\":\\\\\\\"Functional view\\\\\\\",\\\\\\\"viewpointId\\\\\\\":\\\\\\\"functional\\\\\\\",\\\\\\\"modelIds\\\\\\\":[\\\\\\\"model-a\\\\\\\",\\\\\\\"model-a-alt\\\\\\\",\\\\\\\"model-b\\\\\\\"],\\\\\\\"sourceIds\\\\\\\":[\\\\\\\"requirement\\\\\\\",\\\\\\\"specification\\\\\\\"]}],\\\\\\\"models\\\\\\\":[{\\\\\\\"id\\\\\\\":\\\\\\\"model-a\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"component\\\\\\\",\\\\\\\"content\\\\\\\":\\\\\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\\\\\",\\\\\\\"concernIds\\\\\\\":[\\\\\\\"concern-a\\\\\\\"],\\\\\\\"sourceIds\\\\\\\":[\\\\\\\"requirement\\\\\\\",\\\\\\\"specification\\\\\\\"]},{\\\\\\\"id\\\\\\\":\\\\\\\"model-a-alt\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"component\\\\\\\",\\\\\\\"content\\\\\\\":\\\\\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\\\\\",\\\\\\\"concernIds\\\\\\\":[\\\\\\\"concern-a\\\\\\\"],\\\\\\\"sourceIds\\\\\\\":[\\\\\\\"requirement\\\\\\\",\\\\\\\"specification\\\\\\\"]},{\\\\\\\"id\\\\\\\":\\\\\\\"model-b\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"component\\\\\\\",\\\\\\\"content\\\\\\\":\\\\\\\"The Weiqi replay factory uses immutable original states as WeakMap cache keys. Code keeps raw successful result slots per invocation, resolves only bounded own data paths, validates current JSON without replacing identity, and emits separate detached snapshots.\\\\\\\",\\\\\\\"concernIds\\\\\\\":[\\\\\\\"concern-b\\\\\\\"],\\\\\\\"sourceIds\\\\\\\":[\\\\\\\"requirement\\\\\\\",\\\\\\\"specification\\\\\\\"]}],\\\\\\\"correspondences\\\\\\\":[],\\\\\\\"decisions\\\\\\\":[{\\\\\\\"id\\\\\\\":\\\\\\\"choice\\\\\\\",\\\\\\\"statement\\\\\\\":\\\\\\\"Extend the original factory receiver with explicit bounded argument-reference metadata; preserve the Weiqi API and session owner.\\\\\\\",\\\\\\\"rationale\\\\\\\":\\\\\\\"Cloning a state before passing it to extend loses incremental session identity even when the JSON is equal.\\\\\\\",\\\\\\\"alternatives\\\\\\\":[\\\\\\\"Rewrite Weiqi into unary stateless wrappers and replay every historical move.\\\\\\\"],\\\\\\\"concernIds\\\\\\\":[\\\\\\\"concern-a\\\\\\\",\\\\\\\"concern-b\\\\\\\"],\\\\\\\"sourceIds\\\\\\\":[\\\\\\\"requirement\\\\\\\",\\\\\\\"specification\\\\\\\"]}],\\\\\\\"openQuestions\\\\\\\":[]}\\\",\\\"digest\\\":\\\"sha256:5af48004efa0cc177144951d9071edb03f34a0f7c6d57453fae8bd26be34874c\\\"}],\\\"design\\\":{\\\"components\\\":[{\\\"dependencyIds\\\":[],\\\"id\\\":\\\"replay-engine\\\",\\\"layer\\\":\\\"code\\\",\\\"owner\\\":\\\"red-cup-engineering/weiqi-engine\\\",\\\"providedPorts\\\":[],\\\"requiredPorts\\\":[],\\\"responsibility\\\":\\\"Preserve original state identity during deterministic game replay\\\"}],\\\"connections\\\":[],\\\"openQuestions\\\":[],\\\"traceability\\\":[{\\\"architectureModelIds\\\":[\\\"model-a\\\"],\\\"designElementIds\\\":[\\\"replay-engine\\\"],\\\"requirementCellId\\\":\\\"weiqi-replay-state-references:identity\\\",\\\"specificationClauseIds\\\":[\\\"clause-0\\\"]},{\\\"architectureModelIds\\\":[\\\"model-b\\\"],\\\"designElementIds\\\":[\\\"replay-engine\\\"],\\\"requirementCellId\\\":\\\"weiqi-replay-state-references:refusal\\\",\\\"specificationClauseIds\\\":[\\\"clause-1\\\"]}]},\\\"admitted\\\":false,\\\"proof\\\":\\\"unreceived\\\"}\",\"digest\":\"sha256:0018460971c23a59c5f9e920065397a6ef5fefe0900463f0085ae971545a251f\"}]}"
+        }
+      ],
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operations",
+          "traceability",
+          "openQuestions"
+        ],
+        "properties": {
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "componentId",
+                "module",
+                "exportName",
+                "inputSchemaJson",
+                "outputSchemaJson",
+                "behavior",
+                "preconditions",
+                "postconditions",
+                "failureCases",
+                "resourceBounds",
+                "effectBoundaries",
+                "acceptanceObligations"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "componentId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "module": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "exportName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "inputSchemaJson": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "outputSchemaJson": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "behavior": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "preconditions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "postconditions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "failureCases": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "resourceBounds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "effectBoundaries": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "acceptanceObligations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                }
+              }
+            },
+            "minItems": 1
+          },
+          "traceability": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requirementCellId",
+                "specificationClauseIds",
+                "architectureModelIds",
+                "designElementIds"
+              ],
+              "properties": {
+                "requirementCellId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "specificationClauseIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "architectureModelIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "designElementIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                }
+              }
+            },
+            "minItems": 1
+          },
+          "openQuestions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "requiredCapabilities": [
+        "text-output"
+      ]
+    }
+  },
+  "delivery": "{\"operations\":[{\"id\":\"replay-engine\",\"componentId\":\"replay-engine\",\"module\":\"src/replay.mjs\",\"exportName\":\"createWeiqiGameEngine\",\"inputSchemaJson\":\"{\\\"type\\\":\\\"object\\\",\\\"required\\\":[\\\"arguments\\\",\\\"calls\\\"],\\\"additionalProperties\\\":false,\\\"properties\\\":{\\\"arguments\\\":{\\\"type\\\":\\\"array\\\",\\\"maxItems\\\":2},\\\"calls\\\":{\\\"type\\\":\\\"array\\\",\\\"maxItems\\\":16,\\\"items\\\":{\\\"type\\\":\\\"object\\\"}}},\\\"x-javascript-factory\\\":{\\\"methods\\\":[\\\"initialPosition\\\",\\\"extend\\\"],\\\"maxCalls\\\":16,\\\"maxArguments\\\":2,\\\"resultReferences\\\":{\\\"maxPathLength\\\":1}}}\",\"outputSchemaJson\":\"{\\\"type\\\":\\\"array\\\",\\\"maxItems\\\":16,\\\"items\\\":{\\\"type\\\":\\\"object\\\",\\\"required\\\":[\\\"status\\\"],\\\"properties\\\":{\\\"status\\\":{\\\"enum\\\":[\\\"returned\\\",\\\"threw\\\"]}}}}\",\"behavior\":\"Construct a fresh Weiqi engine and execute declared own methods. Explicit reference metadata binds null argument slots to prior successful raw states without cloning, while observations remain detached canonical JSON.\",\"preconditions\":[\"Only earlier successful nonvoid results in this invocation may be referenced. Paths address existing own enumerable data properties and cannot traverse getters, proxies or prototypes.\"],\"postconditions\":[\"Accepted commands use the original incremental session state. Older successful states remain valid independent branch points. Observation snapshots do not change after later calls.\"],\"failureCases\":[\"Invalid references refuse outside source-error capture. Illegal moves and configuration mismatches retain the original game errors. Capturing a source error does not imply rollback.\"],\"resourceBounds\":[\"At most 16 calls, 2 arguments per call and one path component. Original JSON request/observation bounds apply.\"],\"effectBoundaries\":[\"In-memory game only; no persistence, browser, network or cleanup protocol.\"],\"acceptanceObligations\":[\"Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.\",\"Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.\"]}],\"traceability\":[{\"requirementCellId\":\"weiqi-replay-state-references:identity\",\"specificationClauseIds\":[\"clause-0\"],\"architectureModelIds\":[\"model-a\"],\"designElementIds\":[\"replay-engine\"]},{\"requirementCellId\":\"weiqi-replay-state-references:refusal\",\"specificationClauseIds\":[\"clause-1\"],\"architectureModelIds\":[\"model-b\"],\"designElementIds\":[\"replay-engine\"]}],\"openQuestions\":[]}",
+  "codeWorkReadout": {
+    "type": "EngineeringDesignCodeWorkReadout",
+    "version": 1,
+    "designCarrierId": "ni:///sha-256;2Ts3hF71XdbGAwd_rZAdP0E2zdcfvKvxi2gPQPy-pfU",
+    "sourceCut": [
+      {
+        "kind": "requirement",
+        "digest": "sha256:3629da908743e8e2b33ace2bd226236e0ee364f1a9cce23d5aa77b966f61f9a6"
+      },
+      {
+        "kind": "specification",
+        "digest": "sha256:64b7762236bb613fb32a33a80bc6a62b93daee0731eca5a6695d35c7ee2511f2"
+      },
+      {
+        "kind": "architecture",
+        "digest": "sha256:5af48004efa0cc177144951d9071edb03f34a0f7c6d57453fae8bd26be34874c"
+      },
+      {
+        "kind": "high-level",
+        "digest": "sha256:0018460971c23a59c5f9e920065397a6ef5fefe0900463f0085ae971545a251f"
+      }
+    ],
+    "codeSnapshotScope": "supplied-target-views-only",
+    "status": "source-present-unassayed",
+    "targets": [
+      {
+        "operationId": "replay-engine",
+        "componentId": "replay-engine",
+        "originalComponentOwner": "red-cup-engineering/weiqi-engine",
+        "module": "src/replay.mjs",
+        "exportName": "createWeiqiGameEngine",
+        "sourceStatus": "source-present-unassayed",
+        "observedSha256": "sha256:4937a09acb4f19bea68a5c152bcd44316812c35391626de0fb84d378e88e66d3",
+        "expectedSha256": "sha256:4937a09acb4f19bea68a5c152bcd44316812c35391626de0fb84d378e88e66d3",
+        "bindingObservation": {
+          "status": "observed",
+          "resolved": {
+            "owner": "red-cup-engineering/weiqi-engine",
+            "path": "src/replay.mjs",
+            "binding": "createWeiqiGameEngine"
+          },
+          "evidence": [
+            {
+              "path": "src/replay.mjs",
+              "exportedName": "createWeiqiGameEngine",
+              "start": 1139,
+              "end": 2879
+            }
+          ],
+          "reason": null
+        },
+        "reviewedPortContracts": null,
+        "originalTrace": [
+          {
+            "requirementCellId": "weiqi-replay-state-references:identity",
+            "sourceTarget": "held",
+            "specificationClauseIds": [
+              "clause-0"
+            ],
+            "architectureModelIds": [
+              "model-a"
+            ]
+          },
+          {
+            "requirementCellId": "weiqi-replay-state-references:refusal",
+            "sourceTarget": "held",
+            "specificationClauseIds": [
+              "clause-1"
+            ],
+            "architectureModelIds": [
+              "model-b"
+            ]
+          }
+        ],
+        "interface": {
+          "inputSchema": {
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "maxItems": 2,
+                "type": "array"
+              },
+              "calls": {
+                "items": {
+                  "type": "object"
+                },
+                "maxItems": 16,
+                "type": "array"
+              }
+            },
+            "required": [
+              "arguments",
+              "calls"
+            ],
+            "type": "object",
+            "x-javascript-factory": {
+              "maxArguments": 2,
+              "maxCalls": 16,
+              "methods": [
+                "initialPosition",
+                "extend"
+              ],
+              "resultReferences": {
+                "maxPathLength": 1
+              }
+            }
+          },
+          "outputSchema": {
+            "items": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "returned",
+                    "threw"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ],
+              "type": "object"
+            },
+            "maxItems": 16,
+            "type": "array"
+          }
+        },
+        "testObligations": {
+          "behavior": "Construct a fresh Weiqi engine and execute declared own methods. Explicit reference metadata binds null argument slots to prior successful raw states without cloning, while observations remain detached canonical JSON.",
+          "preconditions": [
+            "Only earlier successful nonvoid results in this invocation may be referenced. Paths address existing own enumerable data properties and cannot traverse getters, proxies or prototypes."
+          ],
+          "postconditions": [
+            "Accepted commands use the original incremental session state. Older successful states remain valid independent branch points. Observation snapshots do not change after later calls."
+          ],
+          "failureCases": [
+            "Invalid references refuse outside source-error capture. Illegal moves and configuration mismatches retain the original game errors. Capturing a source error does not imply rollback."
+          ],
+          "resourceBounds": [
+            "At most 16 calls, 2 arguments per call and one path component. Original JSON request/observation bounds apply."
+          ],
+          "effectBoundaries": [
+            "In-memory game only; no persistence, browser, network or cleanup protocol."
+          ],
+          "acceptance": [
+            "Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.",
+            "Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately."
+          ],
+          "sourceVerification": [
+            {
+              "requirementCellId": "weiqi-replay-state-references:identity",
+              "specificationClauseId": "clause-0",
+              "test": "Generate sequential, branching and ko cases. Compare full states/events with the original session owner; instrument Game.play to require six accepted commands to cause exactly six applications, while a JSON-clone control still replays its prefix.",
+              "status": "declared-unverified"
+            },
+            {
+              "requirementCellId": "weiqi-replay-state-references:refusal",
+              "specificationClauseId": "clause-1",
+              "test": "Observe occupied/configuration refusals and recover from earlier successful states. Require missing, future and failed result references to reject outside captureError. Qualify simultaneous fresh invocations separately.",
+              "status": "declared-unverified"
+            }
+          ],
+          "status": "unreceived"
+        }
+      }
+    ],
+    "discrepancies": [],
+    "sourceVerification": {
+      "scope": "original-specification-clauses",
+      "status": "source-tests-declared-unverified",
+      "clauseCount": 2,
+      "declaredTestCount": 2,
+      "missingClauseIds": []
+    },
+    "hldPortSource": {
+      "status": "name-only-unreviewed"
+    },
+    "originalDesignAdmitted": false,
+    "independentProof": "unreceived",
+    "executableWork": false,
+    "codeApplied": false,
+    "beneficiaryReceived": false
+  },
+  "cases": [
+    {
+      "operationId": "replay-engine",
+      "requirementCellId": "weiqi-replay-state-references:identity",
+      "name": "six-incremental-commands",
+      "input": {
+        "arguments": [
+          {
+            "size": 9,
+            "ruleset": "chinese"
+          }
+        ],
+        "calls": [
+          {
+            "method": "initialPosition",
+            "arguments": [],
+            "references": []
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 0,
+                "path": []
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "G7"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 1,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "D3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 2,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "F7"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 3,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "E3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 4,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "F6"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 5,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expectedOutput": [
+        {
+          "status": "returned",
+          "value": {
+            "version": 2,
+            "config": {
+              "size": 9,
+              "ruleset": "chinese"
+            },
+            "commands": [],
+            "moves": [],
+            "handicap": [],
+            "result": null,
+            "board": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "toMove": 1,
+            "capturedBlackStones": 0,
+            "capturedWhiteStones": 0,
+            "passStreak": 0,
+            "mainPhaseEnded": false,
+            "activeKoPoint": null
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                }
+              ],
+              "moves": [
+                "C3"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "G7"
+                }
+              ],
+              "moves": [
+                "C3",
+                "G7"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "G7"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                }
+              ],
+              "moves": [
+                "C3",
+                "G7",
+                "D3"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "G7"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                },
+                {
+                  "kind": "play",
+                  "move": "F7"
+                }
+              ],
+              "moves": [
+                "C3",
+                "G7",
+                "D3",
+                "F7"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "G7"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                },
+                {
+                  "kind": "play",
+                  "move": "F7"
+                },
+                {
+                  "kind": "play",
+                  "move": "E3"
+                }
+              ],
+              "moves": [
+                "C3",
+                "G7",
+                "D3",
+                "F7",
+                "E3"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "G7"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                },
+                {
+                  "kind": "play",
+                  "move": "F7"
+                },
+                {
+                  "kind": "play",
+                  "move": "E3"
+                },
+                {
+                  "kind": "play",
+                  "move": "F6"
+                }
+              ],
+              "moves": [
+                "C3",
+                "G7",
+                "D3",
+                "F7",
+                "E3",
+                "F6"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        }
+      ],
+      "throws": null
+    },
+    {
+      "operationId": "replay-engine",
+      "requirementCellId": "weiqi-replay-state-references:identity",
+      "name": "branch-and-recover-older-state",
+      "input": {
+        "arguments": [
+          {
+            "size": 9,
+            "ruleset": "chinese"
+          }
+        ],
+        "calls": [
+          {
+            "method": "initialPosition",
+            "arguments": [],
+            "references": []
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 0,
+                "path": []
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "G7"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 1,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "F7"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 1,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 1,
+                "path": [
+                  "state"
+                ]
+              }
+            ],
+            "captureError": true
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "G7"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 1,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expectedOutput": [
+        {
+          "status": "returned",
+          "value": {
+            "version": 2,
+            "config": {
+              "size": 9,
+              "ruleset": "chinese"
+            },
+            "commands": [],
+            "moves": [],
+            "handicap": [],
+            "result": null,
+            "board": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "toMove": 1,
+            "capturedBlackStones": 0,
+            "capturedWhiteStones": 0,
+            "passStreak": 0,
+            "mainPhaseEnded": false,
+            "activeKoPoint": null
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                }
+              ],
+              "moves": [
+                "C3"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "G7"
+                }
+              ],
+              "moves": [
+                "C3",
+                "G7"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "F7"
+                }
+              ],
+              "moves": [
+                "C3",
+                "F7"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "threw",
+          "name": "TypeError",
+          "message": "Illegal Weiqi intent: occupied"
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "G7"
+                }
+              ],
+              "moves": [
+                "C3",
+                "G7"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        }
+      ],
+      "throws": null
+    },
+    {
+      "operationId": "replay-engine",
+      "requirementCellId": "weiqi-replay-state-references:refusal",
+      "name": "configuration-error-then-fresh-position",
+      "input": {
+        "arguments": [
+          {
+            "size": 9,
+            "ruleset": "chinese"
+          }
+        ],
+        "calls": [
+          {
+            "method": "initialPosition",
+            "arguments": [
+              "ignored",
+              "weiqi/5/chinese"
+            ],
+            "references": [],
+            "captureError": true
+          },
+          {
+            "method": "initialPosition",
+            "arguments": [],
+            "references": []
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 1,
+                "path": []
+              }
+            ]
+          }
+        ]
+      },
+      "expectedOutput": [
+        {
+          "status": "threw",
+          "name": "TypeError",
+          "message": "Weiqi configuration mismatch: expected weiqi/9/chinese, got weiqi/5/chinese"
+        },
+        {
+          "status": "returned",
+          "value": {
+            "version": 2,
+            "config": {
+              "size": 9,
+              "ruleset": "chinese"
+            },
+            "commands": [],
+            "moves": [],
+            "handicap": [],
+            "result": null,
+            "board": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "toMove": 1,
+            "capturedBlackStones": 0,
+            "capturedWhiteStones": 0,
+            "passStreak": 0,
+            "mainPhaseEnded": false,
+            "activeKoPoint": null
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 9,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C3"
+                }
+              ],
+              "moves": [
+                "C3"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        }
+      ],
+      "throws": null
+    },
+    {
+      "operationId": "replay-engine",
+      "requirementCellId": "weiqi-replay-state-references:refusal",
+      "name": "foreign-configuration-refused",
+      "input": {
+        "arguments": [
+          {
+            "size": 9,
+            "ruleset": "chinese"
+          }
+        ],
+        "calls": [
+          {
+            "method": "extend",
+            "arguments": [
+              {
+                "version": 2,
+                "config": {
+                  "size": 5,
+                  "ruleset": "chinese"
+                },
+                "commands": [],
+                "moves": [],
+                "handicap": [],
+                "result": null,
+                "board": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "toMove": 1,
+                "capturedBlackStones": 0,
+                "capturedWhiteStones": 0,
+                "passStreak": 0,
+                "mainPhaseEnded": false,
+                "activeKoPoint": null
+              },
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [],
+            "captureError": true
+          },
+          {
+            "method": "initialPosition",
+            "arguments": [],
+            "references": []
+          }
+        ]
+      },
+      "expectedOutput": [
+        {
+          "status": "threw",
+          "name": "TypeError",
+          "message": "Weiqi replay state belongs to a different engine configuration"
+        },
+        {
+          "status": "returned",
+          "value": {
+            "version": 2,
+            "config": {
+              "size": 9,
+              "ruleset": "chinese"
+            },
+            "commands": [],
+            "moves": [],
+            "handicap": [],
+            "result": null,
+            "board": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "toMove": 1,
+            "capturedBlackStones": 0,
+            "capturedWhiteStones": 0,
+            "passStreak": 0,
+            "mainPhaseEnded": false,
+            "activeKoPoint": null
+          }
+        }
+      ],
+      "throws": null
+    },
+    {
+      "operationId": "replay-engine",
+      "requirementCellId": "weiqi-replay-state-references:refusal",
+      "name": "missing-state-path-refused",
+      "input": {
+        "arguments": [
+          {
+            "size": 9,
+            "ruleset": "chinese"
+          }
+        ],
+        "calls": [
+          {
+            "method": "initialPosition",
+            "arguments": [],
+            "references": []
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 0,
+                "path": [
+                  "missing"
+                ]
+              }
+            ],
+            "captureError": true
+          }
+        ]
+      },
+      "expectedOutput": null,
+      "throws": "TypeError"
+    },
+    {
+      "operationId": "replay-engine",
+      "requirementCellId": "weiqi-replay-state-references:refusal",
+      "name": "failed-result-reference-refused",
+      "input": {
+        "arguments": [
+          {
+            "size": 9,
+            "ruleset": "chinese"
+          }
+        ],
+        "calls": [
+          {
+            "method": "initialPosition",
+            "arguments": [
+              "ignored",
+              "weiqi/5/chinese"
+            ],
+            "references": [],
+            "captureError": true
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 0,
+                "path": []
+              }
+            ],
+            "captureError": true
+          }
+        ]
+      },
+      "expectedOutput": null,
+      "throws": "TypeError"
+    },
+    {
+      "operationId": "replay-engine",
+      "requirementCellId": "weiqi-replay-state-references:refusal",
+      "name": "future-reference-refused",
+      "input": {
+        "arguments": [
+          {
+            "size": 9,
+            "ruleset": "chinese"
+          }
+        ],
+        "calls": [
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 0,
+                "path": []
+              }
+            ],
+            "captureError": true
+          }
+        ]
+      },
+      "expectedOutput": null,
+      "throws": "TypeError"
+    },
+    {
+      "operationId": "replay-engine",
+      "requirementCellId": "weiqi-replay-state-references:identity",
+      "name": "ko-history-survives-result-references",
+      "input": {
+        "arguments": [
+          {
+            "size": 5,
+            "ruleset": "chinese"
+          }
+        ],
+        "calls": [
+          {
+            "method": "initialPosition",
+            "arguments": [],
+            "references": []
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C2"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 0,
+                "path": []
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 1,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "B3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 2,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "B4"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 3,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "D3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 4,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "D4"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 5,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "A1"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 6,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C5"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 7,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C4"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 8,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "C3"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 9,
+                "path": [
+                  "state"
+                ]
+              }
+            ],
+            "captureError": true
+          },
+          {
+            "method": "extend",
+            "arguments": [
+              null,
+              {
+                "kind": "play",
+                "move": "E5"
+              }
+            ],
+            "references": [
+              {
+                "argument": 0,
+                "result": 9,
+                "path": [
+                  "state"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expectedOutput": [
+        {
+          "status": "returned",
+          "value": {
+            "version": 2,
+            "config": {
+              "size": 5,
+              "ruleset": "chinese"
+            },
+            "commands": [],
+            "moves": [],
+            "handicap": [],
+            "result": null,
+            "board": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "toMove": 1,
+            "capturedBlackStones": 0,
+            "capturedWhiteStones": 0,
+            "passStreak": 0,
+            "mainPhaseEnded": false,
+            "activeKoPoint": null
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                }
+              ],
+              "moves": [
+                "C2"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B3"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3",
+                "B3"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B4"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3",
+                "B3",
+                "B4"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                2,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B4"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3",
+                "B3",
+                "B4",
+                "D3"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                2,
+                1,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": [
+              {
+                "kind": "atari-given",
+                "term": "atari",
+                "detail": {
+                  "point": "C4",
+                  "color": 2,
+                  "groupSize": 1
+                }
+              }
+            ]
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B4"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                },
+                {
+                  "kind": "play",
+                  "move": "D4"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3",
+                "B3",
+                "B4",
+                "D3",
+                "D4"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                2,
+                1,
+                0,
+                0,
+                2,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B4"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                },
+                {
+                  "kind": "play",
+                  "move": "D4"
+                },
+                {
+                  "kind": "play",
+                  "move": "A1"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3",
+                "B3",
+                "B4",
+                "D3",
+                "D4",
+                "A1"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                2,
+                1,
+                0,
+                0,
+                2,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": []
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B4"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                },
+                {
+                  "kind": "play",
+                  "move": "D4"
+                },
+                {
+                  "kind": "play",
+                  "move": "A1"
+                },
+                {
+                  "kind": "play",
+                  "move": "C5"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3",
+                "B3",
+                "B4",
+                "D3",
+                "D4",
+                "A1",
+                "C5"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                2,
+                1,
+                0,
+                0,
+                2,
+                0,
+                2,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 0,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": null
+            },
+            "events": [
+              {
+                "kind": "eye-formed",
+                "term": "eye",
+                "detail": {
+                  "point": "C4",
+                  "color": 2
+                }
+              }
+            ]
+          }
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B4"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                },
+                {
+                  "kind": "play",
+                  "move": "D4"
+                },
+                {
+                  "kind": "play",
+                  "move": "A1"
+                },
+                {
+                  "kind": "play",
+                  "move": "C5"
+                },
+                {
+                  "kind": "play",
+                  "move": "C4"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3",
+                "B3",
+                "B4",
+                "D3",
+                "D4",
+                "A1",
+                "C5",
+                "C4"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                1,
+                0,
+                0,
+                2,
+                1,
+                2,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0
+              ],
+              "toMove": 2,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 1,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": 12
+            },
+            "events": [
+              {
+                "kind": "capture",
+                "term": "capture",
+                "detail": {
+                  "point": "C4",
+                  "by": 1,
+                  "stonesCaptured": 1,
+                  "groupsCaptured": 1
+                }
+              },
+              {
+                "kind": "group-killed",
+                "term": "life-and-death",
+                "detail": {
+                  "color": 2,
+                  "groupSize": 1,
+                  "stones": [
+                    "C3"
+                  ]
+                }
+              },
+              {
+                "kind": "ko-started",
+                "term": "ko",
+                "detail": {
+                  "point": "C3"
+                }
+              },
+              {
+                "kind": "eye-formed",
+                "term": "eye",
+                "detail": {
+                  "point": "C3",
+                  "color": 1
+                }
+              }
+            ]
+          }
+        },
+        {
+          "status": "threw",
+          "name": "TypeError",
+          "message": "Illegal Weiqi intent: positional-superko"
+        },
+        {
+          "status": "returned",
+          "value": {
+            "state": {
+              "version": 2,
+              "config": {
+                "size": 5,
+                "ruleset": "chinese"
+              },
+              "commands": [
+                {
+                  "kind": "play",
+                  "move": "C2"
+                },
+                {
+                  "kind": "play",
+                  "move": "C3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B3"
+                },
+                {
+                  "kind": "play",
+                  "move": "B4"
+                },
+                {
+                  "kind": "play",
+                  "move": "D3"
+                },
+                {
+                  "kind": "play",
+                  "move": "D4"
+                },
+                {
+                  "kind": "play",
+                  "move": "A1"
+                },
+                {
+                  "kind": "play",
+                  "move": "C5"
+                },
+                {
+                  "kind": "play",
+                  "move": "C4"
+                },
+                {
+                  "kind": "play",
+                  "move": "E5"
+                }
+              ],
+              "moves": [
+                "C2",
+                "C3",
+                "B3",
+                "B4",
+                "D3",
+                "D4",
+                "A1",
+                "C5",
+                "C4",
+                "E5"
+              ],
+              "handicap": [],
+              "result": null,
+              "board": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                1,
+                0,
+                0,
+                2,
+                1,
+                2,
+                0,
+                0,
+                0,
+                2,
+                0,
+                2
+              ],
+              "toMove": 1,
+              "capturedBlackStones": 0,
+              "capturedWhiteStones": 1,
+              "passStreak": 0,
+              "mainPhaseEnded": false,
+              "activeKoPoint": 12
+            },
+            "events": [
+              {
+                "kind": "eye-formed",
+                "term": "eye",
+                "detail": {
+                  "point": "D5",
+                  "color": 2
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "throws": null
+    }
+  ]
+}
