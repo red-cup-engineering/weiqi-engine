@@ -37,11 +37,16 @@
     "test:properties": "node --test test/properties.test.mjs",
     "test:browser": "node --test test/browser-build.test.mjs",
     "test:glossary": "node scripts/verify-glossary.mjs",
-    "test:consumer": "node --test test/consumer/*.test.mjs"
+    "test:consumer": "node --test test/consumer/*.test.mjs",
+    "test:fabrication": "node --test test/engineering-code-contracts.test.mjs test/factory-reference-identity.test.mjs"
   },
   "private": false,
   "funding": {
     "type": "individual",
     "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
+  },
+  "devDependencies": {
+    "@red-cup-engineering/json-services-section": "0.4.0",
+    "@red-cup-engineering/signcell": "0.4.2"
   }
 }
