@@ -67,6 +67,32 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       }
     });
 
+    await t.test("generated search policies read continuations after resumed counting", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      const policies = await import(pathToFileURL(join(destination, "policies.mjs")).href);
+      const session = kernel.createWeiqiGameSession({ size: 9, ruleset: "chinese" }, [
+        { kind: "play", move: "D4" }, { kind: "pass" }, { kind: "pass" },
+        { kind: "play", move: "E4" },
+      ]);
+      const game = kernel.materializeWeiqiGame(session);
+      const branches = [];
+      const fork = game.fork.bind(game);
+      game.fork = () => { const branch = fork(); branches.push(branch); return branch; };
+      const move = policies.chooseMonteCarloMove(game, kernel, () => 0.37,
+        { playouts: 12, maxPlayoutMoves: 0 });
+      assert.ok(branches.some((branch) => branch.history.length > game.history.length + 1),
+        "the generated search explores opponent replies, not only root placements");
+      const next = kernel.admitWeiqiGameCommand(session, session.version, { kind: "play", move });
+      assert.equal(next.ok, true);
+      assert.equal(next.session.state.mainPhaseEnded, true, "historical counting remains recorded");
+      assert.equal(next.session.state.passStreak, 0);
+      const trial = kernel.materializeWeiqiGame(next.session);
+      const length = trial.history.length;
+      policies.randomPlayout(trial, kernel, () => 0.37, 3);
+      assert.equal(trial.history.length, length + 3);
+      assert.equal(game.history.length, session.version + 1, "search leaves the real game unchanged");
+    });
+
     await t.test("generated SGF import refuses turn-changing setup before a Study session exists", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       for (const text of ["(;GM[1]SZ[9]PL[W])", "(;GM[1]SZ[9];B[aa];PL[B])"]) {

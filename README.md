@@ -92,6 +92,13 @@ reference regression positions, both scoring modes, seki, captures and dead
 stones, session/match replay, SGF and semantic events. A full cross-package
 release remains the application's `verify:release` responsibility.
 
+The shared Pondering policy continues its random playouts and tree expansion
+when players resume after a disputed count. Search stops at the **current**
+two-pass streak or a final result, not the historical `mainPhaseEnded` flag.
+The original rules history, ko restrictions and counting observations remain
+intact. Native and generated-browser tests verify actual opponent replies,
+bounded playout execution, repeated resumption and an unchanged played game.
+
 The native suite is independent of checkout layout. Glossary integration is
 an explicit check against the original web application's compiled Science
 artifact, not an assumption that a former Science monorepo lives nine
