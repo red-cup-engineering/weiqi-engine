@@ -93,6 +93,23 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       assert.equal(game.history.length, session.version + 1, "search leaves the real game unchanged");
     });
 
+    await t.test("generated SGF import refuses empty variations without losing valid empty nodes", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      for (const text of ["(;GM[1]SZ[9];B[aa]()(;W[bb]))",
+        "(;GM[1]SZ[9];B[aa](;W[bb])())"]) {
+        assert.throws(() => kernel.sgfToGameRecord(text), /SGF game tree must contain at least one node/);
+      }
+      const record = kernel.sgfToGameRecord("(;GM[1]SZ[9];B[aa](; ;W[bb];)(;))");
+      const commands = record.moves.map(({ point }) => ({
+        kind: "play", move: kernel.pointToCoord(record.size, point),
+      }));
+      const session = kernel.createWeiqiGameSession({ size: record.size, ruleset: "chinese" }, commands);
+      assert.equal(session.version, 2);
+      assert.equal(session.state.board[0], kernel.BLACK);
+      assert.equal(session.state.board[10], kernel.WHITE);
+      assert.equal(session.state.toMove, kernel.BLACK);
+    });
+
     await t.test("generated SGF import refuses turn-changing setup before a Study session exists", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       for (const text of ["(;GM[1]SZ[9]PL[W])", "(;GM[1]SZ[9];B[aa];PL[B])"]) {
