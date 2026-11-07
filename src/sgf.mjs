@@ -8,7 +8,7 @@
 //
 // The higher-level layer (gameRecordToSgf/sgfToGameRecord) is the
 // convenience API game records actually use: a linear sequence of moves
-// plus root game-info properties (size, ruleset, komi, handicap). On import
+// plus root geometry and selected game information (ruleset, komi, handicap). On import
 // it follows the first child at each variation fork (SGF's main line);
 // alternative branches remain available through parseSgfCollection.
 // Export serializes one linear main line; variation authoring is out of scope.
@@ -212,6 +212,27 @@ function* mainLineNodes(tree) {
   }
 }
 
+// SGF FF[4] distinguishes root properties (such as SZ) from game-info
+// properties. A shared opening may have its one game-info node farther
+// down the selected branch. See sgf4.html section 2.2.1 and properties.html
+// at https://www.red-bean.com/sgf/; HA and KM are Go-specific game-info.
+const GAME_INFO_PROPERTIES = new Set([
+  "AN", "BR", "BT", "CP", "DT", "EV", "GN", "GC", "ON", "OT", "PB", "PC",
+  "PW", "RE", "RO", "RU", "SO", "TM", "US", "WR", "WT", "HA", "KM",
+]);
+
+function mainLineGameInfo(tree) {
+  let info;
+  for (const { properties } of mainLineNodes(tree)) {
+    if (!Object.keys(properties).some((key) => GAME_INFO_PROPERTIES.has(key))) continue;
+    if (info !== undefined) {
+      throw new Error("SGF game-info properties must occur in only one node on the main line");
+    }
+    info = properties;
+  }
+  return info ?? {};
+}
+
 export function sgfToGameRecord(text) {
   const trees = parseSgfCollection(text);
   if (trees.length === 0) throw new Error("Empty SGF collection");
@@ -219,11 +240,17 @@ export function sgfToGameRecord(text) {
   if (tree.nodes.length === 0) throw new Error("SGF game tree has no nodes");
 
   const root = tree.nodes[0];
+  const gameInfo = mainLineGameInfo(tree);
   // The game-record projection consumes only one value for each scalar
   // property. Refuse extra values rather than silently discard evidence.
-  for (const key of ["GM", "FF", "SZ", "RU", "KM", "RE", "HA"]) {
-    if (root.properties[key]?.length > 1) {
-      throw new Error(`SGF ${key} must have exactly one value`);
+  for (const [properties, keys] of [
+    [root.properties, ["GM", "FF", "SZ"]],
+    [gameInfo, ["RU", "KM", "RE", "HA"]],
+  ]) {
+    for (const key of keys) {
+      if (properties[key]?.length > 1) {
+        throw new Error(`SGF ${key} must have exactly one value`);
+      }
     }
   }
   if (root.properties.GM && root.properties.GM[0] !== "1") {
@@ -237,8 +264,8 @@ export function sgfToGameRecord(text) {
     // Never coerce an SGF exponent/fraction/rectangle into a new board.
     throw new Error(`Unsupported SGF board size: "${szValue}" (expected square 1–19)`);
   }
-  const ruleset = root.properties.RU?.[0];
-  const kmValue = root.properties.KM?.[0];
+  const ruleset = gameInfo.RU?.[0];
+  const kmValue = gameInfo.KM?.[0];
   // Number("") is 0 and Number("garbage") is NaN: neither is a
   // legitimate interpretation of a declared SGF Real/komi value.
   if (kmValue !== undefined &&
@@ -246,7 +273,7 @@ export function sgfToGameRecord(text) {
     throw new Error(`Invalid SGF komi KM[${kmValue}]`);
   }
   const komi = kmValue === undefined ? undefined : Number(kmValue);
-  const result = root.properties.RE?.[0];
+  const result = gameInfo.RE?.[0];
   const handicap = root.properties.AB
     ? root.properties.AB.map((v) => pointToCoord(size, sgfCoordToPoint(size, v)))
     : undefined;
@@ -256,7 +283,7 @@ export function sgfToGameRecord(text) {
   // HA declares the intended handicap; AB gives its actual placement.
   // Keep that distinction: a root AB without HA could be arbitrary setup
   // stones, and a mismatched HA must not silently become a different game.
-  const ha = root.properties.HA?.[0];
+  const ha = gameInfo.HA?.[0];
   if (ha !== undefined && !/^(?:0|[1-9][0-9]*)$/u.test(ha)) {
     throw new Error(`Invalid SGF handicap count HA[${ha}]`);
   }

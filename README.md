@@ -215,6 +215,12 @@ Everything re-exports from `src/index.mjs`:
   convenience layer follows the first child at each variation fork, the SGF
   main line, without mixing in alternative branches. Other variations stay
   available in the parsed collection; only variation *authoring* is out of scope.
+  Board geometry stays at the root. Rules, komi, result and declared handicap
+  come from the selected path's game-info node, which may occur below a shared
+  opening. Following [SGF FF[4] property types](https://www.red-bean.com/sgf/sgf4.html),
+  linear import refuses multiple game-info nodes on that path instead of
+  guessing which game's metadata to keep. Unselected branches and later games
+  do not affect this record. Ordinary node comments remain unrestricted.
   The imported record retains SGF `HA` as `handicapCount` (declared number)
   separately from `AB` as `handicap` (the actual Black setup coordinates).
   This prevents consumers from inferring handicaps from arbitrary setup
@@ -229,6 +235,11 @@ Everything re-exports from `src/index.mjs`:
   breaks are discarded in property values (including CRLF/LFCR forms), and
   duplicate property identifiers in a node are rejected rather than silently
   overwriting the earlier game-size, setup-stone, or move property.
+  `test/sgf.test.mjs` covers syntax, tree serialization and linear records;
+  `test/sgf-game-info.test.mjs` covers metadata placement, branch isolation and
+  invalid game-info declarations. The browser-build test exercises the emitted
+  module's import-to-session path. These are behavioral format contracts, not
+  serialized game-state snapshots.
 - **`zobrist.mjs`** — `boardHash` and `situationalHash` are deterministic
   64-bit *fingerprints*, not injective board identifiers. `Game` uses a hash
   match as the fast filter for ko/superko and then checks every board cell

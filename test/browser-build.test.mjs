@@ -47,6 +47,20 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       assert.equal(kernel.countPosition(new kernel.Game(9, "chinese")).mode, "area");
     });
 
+    await t.test("generated SGF records preserve the selected game's rules through session replay", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      const record = kernel.sgfToGameRecord("(;GM[1]SZ[9];B[cc](;RU[japanese]KM[6.5];W[gg];B[];W[])(;RU[chinese];W[dd]))");
+      const commands = record.moves.map(({ point }) => point === "pass"
+        ? { kind: "pass" } : { kind: "play", move: kernel.pointToCoord(record.size, point) });
+      const session = kernel.createWeiqiGameSession({ size: record.size, ruleset: record.ruleset }, commands);
+      assert.equal(session.config.ruleset, "japanese");
+      assert.deepEqual(session.state.moves, ["C3", "G7", "pass", "pass"]);
+      assert.equal(kernel.countPosition(kernel.materializeWeiqiGame(session)).mode, "territory");
+      assert.equal(kernel.weiqiSessionToSgfRecord(session).komi, 6.5);
+      assert.throws(() => kernel.sgfToGameRecord("(;SZ[9]RU[chinese];B[cc];KM[6.5])"),
+        /game-info.*one node/i);
+    });
+
     await t.test("generated sessions retain rescues by capture through saved replay", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       for (const color of [kernel.BLACK, kernel.WHITE]) {
