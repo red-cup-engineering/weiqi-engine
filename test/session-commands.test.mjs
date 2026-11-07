@@ -59,7 +59,6 @@ test("a settlement is admitted only after two passes, removes the named stones, 
   assert.deepEqual(twice, { ok: false, reason: "game-ended" });
 });
 
-
 test("versioned sessions reject settlement after resumed play until the next pass pair", () => {
   let session = createWeiqiGameSession({ size: 9, ruleset: "chinese" });
   for (const move of ["E5", "D4", "pass", "pass", "C3"]) {
@@ -77,7 +76,6 @@ test("versioned sessions reject settlement after resumed play until the next pas
   assert.equal(settled.ok, true, "new accepted consecutive passes reopen the settlement window");
   if (settled.ok) assert.equal(settled.session.state.result.by, "count");
 });
-
 
 test("a Japanese settlement counts territory and the prisoner the dead stone becomes", () => {
   let session = sessionAfterMoves({ size: 5, ruleset: "japanese" }, WALL_WITH_INVADER);
@@ -141,4 +139,33 @@ test("a counted result serializes as the winner plus margin, and a draw as 0", (
     assert.equal(result.score.blackScore, 15);
     assert.equal(result.score.whiteScore, 5 + 7);
   }
+});
+
+test("malformed columns leave the game open for a corrected move at the same version", () => {
+  const session = admit(createWeiqiGameSession({ size: 9, ruleset: "chinese" }), { kind: "pass" });
+  for (const move of ["AB1", " ab01 ", "HJK9", "JK1"]) {
+    assert.deepEqual(admitWeiqiGameCommand(session, session.version, { kind: "play", move }),
+      { ok: false, reason: "off-board" }, move);
+    assert.equal(materializeWeiqiGame(session).isLegal(move), false, move);
+    assert.throws(() => createWeiqiGameSession(session.config, [...session.commands, { kind: "play", move }]),
+      /off-board/, "saved records must not replay an invented intersection");
+  }
+  assert.equal(session.version, 1);
+  assert.equal(session.state.toMove, WHITE);
+  assert.equal(session.state.passStreak, 1);
+  assert.equal(session.state.board.every(stone => stone === 0), true);
+  const corrected = admit(session, { kind: "play", move: " a01 " });
+  assert.equal(corrected.version, 2);
+  assert.equal(corrected.state.board[0], WHITE);
+  assert.equal(corrected.state.passStreak, 0);
+});
+
+test("a malformed dead-stone coordinate cannot settle a different intersection", () => {
+  const session = sessionAfterMoves({ size: 9, ruleset: "japanese" }, ["A1", "pass", "pass"]);
+  assert.deepEqual(admitWeiqiGameCommand(session, session.version, { kind: "settle", dead: ["AB1"] }),
+    { ok: false, reason: "not-a-stone" });
+  assert.equal(session.state.result, null);
+  const settled = admit(session, { kind: "settle", dead: [" a01 "] });
+  assert.deepEqual(settled.state.result.dead, ["A1"]);
+  assert.equal(settled.state.result.score.whitePrisoners, 1);
 });

@@ -45,7 +45,7 @@ export function pointIndex(width, col, row) {
 
 /** Parse a Go-notation coordinate like "C3" (skip-I letters, 1-indexed row, row 1 = top) into a point index. */
 export function coordToPoint(width, height, coord) {
-  const m = /^([A-Za-z]+)(\d+)$/.exec(coord.trim());
+  const m = /^([A-Za-z])(\d+)$/.exec(coord.trim());
   if (!m) throw new Error(`Invalid coordinate: "${coord}"`);
   const letters = m[1].toUpperCase();
   const col = COLUMN_LETTERS.indexOf(letters);
