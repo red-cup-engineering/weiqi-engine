@@ -82,3 +82,19 @@ test("Gaming refuses malformed coordinates without recording them and can contin
   assert.equal(replay.valid, false);
   assert.equal(replay.stateHash, player.stateHash());
 });
+
+test("Gaming replay preserves capture rescues without changing accepted state", () => {
+  const config = { size: 3, ruleset: "chinese" };
+  const commands = ["C1", "B3", "B2", "B1", "A3", "A2"].map(move => ({ kind: "play", move }));
+  const player = createRulePlayer(createWeiqiGameEngine(config), { seed: "capture-rescue" });
+  let last;
+  for (const [index, command] of commands.entries()) last = player.play(command, 1000 + index);
+  assert.ok(last.events.some(event => event.kind === "atari-escaped"));
+  const batch = replayPlay(createWeiqiGameEngine(config), "capture-rescue", commands);
+  assert.equal(batch.valid, true);
+  assert.deepEqual(batch.finalState, player.position);
+  assert.equal(batch.stateHash, player.stateHash());
+  const replayed = createWeiqiGameSession(config, commands);
+  assert.deepEqual(player.position, replayed.state);
+  assert.equal(player.position.capturedBlackStones, 1);
+});

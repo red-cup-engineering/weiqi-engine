@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { annotateMove, annotatePass, TERM_PATH, TERM_REFERENCES } from "../src/events.mjs";
 import { applyStonePlacement, createPositionFromCells } from "../src/position.mjs";
-import { BLACK, WHITE, EMPTY, coordToPoint } from "../src/board.mjs";
+import { BLACK, WHITE, EMPTY, coordToPoint, findGroup, pointToCoord } from "../src/board.mjs";
 import { Game } from "../src/game.mjs";
 
 const ILLEGAL = { suicide: "illegal" };
@@ -245,4 +245,62 @@ test("ko-started and ko-resolved fire on the R1 ko shape, played out through a r
   assert.ok(koStartedAgain, "retaking C3 recaptures C4 in the same single-stone shape, opening a mirrored ko there");
   assert.equal(koStartedAgain.detail.point, "C4");
   assert.equal(game.activeKoPoint, coordToPoint(5, 5, "C4"), "the ko point moves to C4, mirroring the original C3 ko");
+});
+
+
+test("capturing an attacker records a remote group's escape under every ruleset", () => {
+  for (const ruleset of ["chinese", "japanese", "aga", "newzealand", "ing"]) {
+    for (const color of [BLACK, WHITE]) {
+      const game = new Game(3, ruleset);
+      const moves = ["C1", "B3", "B2", "B1", "A3"];
+      if (color === BLACK) moves.unshift("pass");
+      for (const move of moves) assert.equal(game.play(move).ok, true);
+      const rescuedPoint = coordToPoint(3, 3, "B3");
+      assert.equal(game.current.toMove, color);
+      assert.equal(findGroup(game.current.board, 3, 3, rescuedPoint).liberties.size, 1);
+      const result = game.play("A2");
+      assert.equal(result.ok, true);
+      assert.equal(findGroup(game.current.board, 3, 3, rescuedPoint).liberties.size, 2);
+      assert.deepEqual(result.events.filter(event => event.type === "atari-escaped")
+        .map(event => event.detail), [{ color, groupSize: 1 }]);
+      assert.equal(result.events.find(event => event.type === "capture").detail.stonesCaptured, 1);
+      assert.equal(game.current.board[coordToPoint(3, 3, "A3")], EMPTY);
+    }
+  }
+});
+
+test("escape observations equal surviving groups gaining liberties on every 3x2 position", () => {
+  const width = 3, height = 2, length = width * height;
+  let placements = 0;
+  for (let encoded = 0; encoded < 3 ** length; encoded++) {
+    let rest = encoded;
+    const cells = Array.from({ length }, () => { const cell = rest % 3; rest = Math.floor(rest / 3); return cell; });
+    for (const color of [BLACK, WHITE]) {
+      const before = createPositionFromCells(width, height, cells, color);
+      const seen = new Set(), threatened = [];
+      for (let point = 0; point < length; point++) {
+        if (cells[point] !== color || seen.has(point)) continue;
+        const group = findGroup(cells, width, height, point);
+        for (const stone of group.stones) seen.add(stone);
+        if (group.liberties.size === 1) threatened.push(group);
+      }
+      for (let point = 0; point < length; point++) {
+        const placed = applyStonePlacement(before, point, ILLEGAL);
+        if (!placed.ok) continue;
+        placements++;
+        const expected = threatened.filter(group => placed.position.board[group.stones[0]] === color)
+          .map(group => findGroup(placed.position.board, width, height, group.stones[0]))
+          .filter(group => group.liberties.size > 1).map(group => group.stones.length).sort((a, b) => a - b);
+        const { events } = annotateMove({ width, height, prevPosition: before,
+          nextPosition: placed.position, point, color, captured: placed.captured,
+          selfCaptured: placed.selfCaptured, activeKoPoint: null });
+        const escapes = events.filter(event => event.type === "atari-escaped");
+        assert.deepEqual(escapes.map(event => event.detail.groupSize).sort((a, b) => a - b), expected,
+          `position ${encoded}, color ${color}, move ${pointToCoord(width, point)}`);
+        assert.ok(escapes.every(event => event.detail.color === color));
+        assert.deepEqual([...before.board], cells, "observing a move must not alter its prior position");
+      }
+    }
+  }
+  assert.ok(placements > 1000, "exercise capture, extension, unchanged and already-safe groups");
 });

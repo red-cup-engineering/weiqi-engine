@@ -68,6 +68,13 @@ against actual forked-game counts.
 
 ## Running tests
 
+The Node suite uses behavioral unit tests, exhaustive small-board properties and
+real generated-module consumers. Replay-factory checks exercise branching, ko,
+errors and accepted prefixes rather than freezing whole board/event snapshots.
+The original design generator continues to own runtime bindings; regeneration
+preserves the package-maintained behavioral tests.
+
+
 ```sh
 npm test                 # syntax-check src, scripts and tests; run all Node tests
 npm run test:properties  # deterministic, seeded legal-play invariants

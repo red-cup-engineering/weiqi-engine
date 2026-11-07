@@ -173,12 +173,18 @@ export function annotateMove(input) {
     }
   }
 
-  // atari-escaped: mover's own groups, adjacent to the played point, that
-  // were in atari before this move and — still present on the board
-  // afterward — now have more than one liberty. Covers both escape by
-  // extension and escape by capturing the attacker.
+  // A threatened friendly group can gain liberties by extending at the
+  // played point or by removing an attacker elsewhere along its boundary.
+  // Include every captured stone's neighbors, not just the new stone's.
+  // Walk each original group once even when several vacated points touch it.
+  const changedBoundary = new Set(neighbors(width, height, point));
+  for (const group of captured) {
+    for (const stone of group.stones) {
+      for (const neighbor of neighbors(width, height, stone)) changedBoundary.add(neighbor);
+    }
+  }
   const seenMine = new Set();
-  for (const n of neighbors(width, height, point)) {
+  for (const n of changedBoundary) {
     if (prevPosition.board[n] === color && !seenMine.has(n)) {
       const gBefore = findGroup(prevPosition.board, width, height, n);
       for (const s of gBefore.stones) seenMine.add(s);

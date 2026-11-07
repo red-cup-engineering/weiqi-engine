@@ -129,3 +129,22 @@ test("only explicitly owned rules-event kinds qualify a tactical invitation", ()
     "known Go source-event kinds continue to qualify alongside unrecognized names");
   assert.deepEqual(retained.evidence, [{ kind: "capture", count: 1 }]);
 });
+
+
+test("a rescue by capture becomes a playable save-the-group challenge", () => {
+  for (const color of [BLACK, WHITE]) {
+    const moves = ["C1", "B3", "B2", "B1", "A3", "A2"];
+    if (color === BLACK) moves.unshift("pass");
+    const commands = moves.map(move => move === "pass" ? { kind: "pass" } : { kind: "play", move });
+    const { session, frames } = admissionFrames(commands, { size: 3, ruleset: "chinese" });
+    const plan = planTacticalTryouts(frames, { color });
+    const rescue = plan.invitations.find(invitation => invitation.kind === "atari-escaped");
+    assert.ok(rescue);
+    assert.equal(rescue.sourceMove, "A2");
+    assert.equal(rescue.title, "Save the threatened group");
+    const branch = createWeiqiGameSession(session.config, commands.slice(0, rescue.branchVersion));
+    const played = admitWeiqiGameCommand(branch, branch.version, { kind: "play", move: rescue.sourceMove });
+    assert.equal(played.ok, true);
+    assert.ok(played.events.some(event => event.type === rescue.kind));
+  }
+});
