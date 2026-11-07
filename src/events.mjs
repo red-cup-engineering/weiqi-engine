@@ -194,8 +194,9 @@ export function annotateMove(input) {
   // connection: the played stone merges two or more previously-distinct
   // friendly groups into one. A simple one-group extension does not count
   // — connection.md's sense is specifically joining stones that were not
-  // already one group.
-  {
+  // already one group. Legal self-capture removes the joined group, so
+  // it cannot announce a surviving connection to a player or teacher.
+  if (!selfCaptured) {
     const friendlyGroupIds = new Set();
     for (const n of neighbors(width, height, point)) {
       if (prevPosition.board[n] === color) {

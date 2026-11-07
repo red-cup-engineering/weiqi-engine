@@ -17,6 +17,13 @@ The glossary and theory remain at Weiqi's science custodian. Event `termRef` val
 `science://lenticule-science/weiqi/terms/<term>` references rather than brittle paths into the
 engineering package.
 
+Connection observations require the joined group to survive the move. Under
+the declared New Zealand rules, a legal multi-stone self-capture reports
+`capture` and `group-killed`, never `connection` for stones that disappeared.
+The native and generated-browser session tests cover both colors, command
+replay, unchanged prisoner accounting, and surviving joins under all five
+rulesets. This is an event correction, not a change to move legality.
+
 ## Doctrine this code implements
 
 - [Rulesets](../../../../../../../../../science-services-section/services/philosophy-services-section/services/relationality-services-section/services/agency-services-section/services/being-services-section/services/doing-services-section/services/playing-services-section/services/gaming-services-section/services/board-games-services-section/services/weiqi-services-section/content/text/documents/articles/teaching-articles/references/rulesets.md) — the five-ruleset
