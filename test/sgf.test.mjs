@@ -65,7 +65,7 @@ test("parser handles backslash-escaped ']' and '\\\\' inside property values", (
   assert.deepEqual(trees[0].nodes[0].properties.C, ["a ] bracket and a \\ backslash"]);
 });
 
-test("property: parse(serialize(tree)) round-trips for a variety of generated trees", () => {
+test("tree serialization preserves branches, values, passes and escaped text", () => {
   const samples = [
     { nodes: [{ properties: { GM: ["1"], SZ: ["19"] } }], children: [] },
     {
@@ -147,8 +147,9 @@ test("gameRecordToSgf / sgfToGameRecord round-trip a linear game record", () => 
 
 test("gameRecordToSgf omits HA/AB when there is no handicap", () => {
   const text = gameRecordToSgf({ size: 19, moves: [] });
-  assert.doesNotMatch(text, /HA\[/);
-  assert.doesNotMatch(text, /AB\[/);
+  const root = parseSgfCollection(text)[0].nodes[0].properties;
+  assert.equal(Object.hasOwn(root, "HA"), false);
+  assert.equal(Object.hasOwn(root, "AB"), false);
 });
 
 test("sgfToGameRecord defaults size to 19 when SZ is absent", () => {
@@ -182,38 +183,21 @@ test("sgfToGameRecord reads the legacy 'tt' pass token, per the SGF spec, on boa
 });
 
 
-test("game-record projection follows the first SGF variation as the main line", () => {
-  const sgf = "(;GM[1]FF[4]SZ[9]RU[Chinese];B[cc](;W[dd];B[ee])(;W[gg]))";
-  const tree = parseSgfCollection(sgf)[0];
-  assert.equal(tree.children.length, 2, "keep both variations in the full SGF parser");
-  assert.deepEqual(sgfToGameRecord(sgf).moves, [
-    { color: BLACK, point: sgfCoordToPoint(9, "cc") },
-    { color: WHITE, point: sgfCoordToPoint(9, "dd") },
-    { color: BLACK, point: sgfCoordToPoint(9, "ee") },
-  ], "the first child continues the record, but the alternate W[gg] is not part of it");
+test("a linear game record follows only the first game and nested first variations", () => {
+  const text = "(;GM[1]SZ[9];B[aa](; ;W[](;B[bb];W[cc])(;B[dd]))(;W[ee]))"
+    + "(;GM[1]SZ[13]RU[Japanese];B[ff])";
+  const trees = parseSgfCollection(text);
+  assert.equal(trees.length, 2);
+  assert.equal(trees[0].children.length, 2);
+  assert.deepEqual(sgfToGameRecord(text), {
+    size: 9, ruleset: undefined, komi: undefined, handicap: undefined,
+    moves: [
+      { color: BLACK, point: 0 }, { color: WHITE, point: "pass" },
+      { color: BLACK, point: 10 }, { color: WHITE, point: 20 },
+    ],
+  });
+  assert.deepEqual(parseSgfCollection(serializeSgfCollection(trees)), trees);
 });
-
-test("main-line projection follows nested first children, retaining passes without taking side branches", () => {
-  const sgf = "(;GM[1]SZ[9];B[aa](;W[]( ;B[bb];W[cc] )( ;B[dd] ))(;W[ee]))";
-  const record = sgfToGameRecord(sgf);
-  assert.deepEqual(record.moves, [
-    { color: BLACK, point: sgfCoordToPoint(9, "aa") },
-    { color: WHITE, point: "pass" },
-    { color: BLACK, point: sgfCoordToPoint(9, "bb") },
-    { color: WHITE, point: sgfCoordToPoint(9, "cc") },
-  ]);
-});
-
-test("the convenience record chooses the first game of a collection and its own main variation", () => {
-  const collection = "(;SZ[9];B[cc](;W[dd])(;W[gg]))\n(;SZ[13];B[aa];W[bb])";
-  const record = sgfToGameRecord(collection);
-  assert.equal(record.size, 9);
-  assert.deepEqual(record.moves, [
-    { color: BLACK, point: sgfCoordToPoint(9, "cc") },
-    { color: WHITE, point: sgfCoordToPoint(9, "dd") },
-  ]);
-});
-
 
 test("SGF record retains HA's declared count separately from AB's actual positions", () => {
   const game = sgfToGameRecord("(;GM[1]FF[4]SZ[9]HA[2]AB[gg][cc];W[ee];B[dd])");
@@ -298,26 +282,6 @@ test("SGF numeric komi is finite and explicit: malformed or empty is not zero", 
   }
   const missing = sgfToGameRecord("(;GM[1]SZ[9];B[aa])");
   assert.equal(missing.komi, undefined, "absent KM remains absent instead of invented");
-});
-
-test("legal passes, variations, setup and standard game-record export still round-trip", () => {
-  const record = {
-    size: 9, ruleset: "chinese", komi: 7.5, handicap: ["C3", "G7"],
-    moves: [
-      { color: WHITE, point: 40 },
-      { color: BLACK, point: "pass" },
-      { color: WHITE, point: 41 },
-    ],
-  };
-  assert.deepEqual(sgfToGameRecord(gameRecordToSgf(record)).moves, record.moves);
-  const varying = sgfToGameRecord("(;GM[1]SZ[9];B[aa](;W[bb];B[cc])(;W[dd]))");
-  assert.deepEqual(varying.moves, [
-    { color: BLACK, point: sgfCoordToPoint(9, "aa") },
-    { color: WHITE, point: sgfCoordToPoint(9, "bb") },
-    { color: BLACK, point: sgfCoordToPoint(9, "cc") },
-  ]);
-  const legacyPass = sgfToGameRecord("(;GM[1]FF[3]SZ[19];B[tt];W[])");
-  assert.deepEqual(legacyPass.moves.map(move => move.point), ["pass", "pass"]);
 });
 
 test("SGF requires a node in every game tree, including all variations", () => {
