@@ -47,6 +47,17 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       assert.equal(kernel.countPosition(new kernel.Game(9, "chinese")).mode, "area");
     });
 
+    await t.test("generated sessions refuse a multi-letter column without changing the turn", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      const initial = kernel.createWeiqiGameSession({ size: 9, ruleset: "chinese" });
+      assert.deepEqual(kernel.admitWeiqiGameCommand(initial, 0, { kind: "play", move: "AB1" }),
+        { ok: false, reason: "off-board" });
+      const corrected = kernel.admitWeiqiGameCommand(initial, 0, { kind: "play", move: "A1" });
+      assert.equal(corrected.ok, true);
+      assert.equal(corrected.session.state.board[0], kernel.BLACK);
+      assert.equal(corrected.session.state.toMove, kernel.WHITE);
+    });
+
     await t.test("generated bot policies continue a handicap game after an early pass", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       const policies = await import(pathToFileURL(join(destination, "policies.mjs")).href);

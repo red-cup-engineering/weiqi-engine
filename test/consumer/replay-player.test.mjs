@@ -61,3 +61,24 @@ test("the shared batch consumer keeps legacy replay state hashes and refuses ter
     assert.equal(invalid.stateHash, accepted.stateHash);
   }
 });
+
+test("Gaming refuses malformed coordinates without recording them and can continue", () => {
+  const entries = [];
+  const seed = "coordinate-admission";
+  const engine = createWeiqiGameEngine(config);
+  const player = createRulePlayer(engine, { seed, onEntry: entry => entries.push(entry) });
+  const initialHash = player.stateHash();
+  assert.throws(() => player.play({ kind: "play", move: "AB1" }, 1000), /off-board/);
+  assert.equal(player.moves, 0);
+  assert.equal(entries.length, 0);
+  assert.equal(player.stateHash(), initialHash);
+  player.play({ kind: "play", move: "A1" }, 1001);
+  assert.equal(player.moves, 1);
+  assert.equal(entries.length, 1);
+  assert.equal(player.position.board[0], 1);
+  const replay = replayPlay(engine, seed, [
+    { kind: "play", move: "A1" }, { kind: "play", move: "BC2" },
+  ]);
+  assert.equal(replay.valid, false);
+  assert.equal(replay.stateHash, player.stateHash());
+});

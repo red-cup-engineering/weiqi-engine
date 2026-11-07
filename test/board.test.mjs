@@ -58,3 +58,34 @@ test("findGroup throws on an empty starting point", () => {
   const board = createEmptyBoard(5, 5);
   assert.throws(() => findGroup(board, 5, 5, 0));
 });
+
+test("every supported board point accepts one Go column letter and a row", () => {
+  const columns = "ABCDEFGHJKLMNOPQRST";
+  for (let size = 1; size <= 19; size++) {
+    for (let row = 1; row <= size; row++) {
+      for (let col = 0; col < size; col++) {
+        const expected = (row - 1) * size + col;
+        const coord = `${columns[col]}${row}`;
+        assert.equal(coordToPoint(size, size, coord), expected, coord);
+        assert.equal(coordToPoint(size, size, ` ${columns[col].toLowerCase()}0${row} `), expected, coord);
+        assert.equal(pointToCoord(size, expected), coord);
+      }
+    }
+  }
+});
+
+test("a Go column is exactly one letter, never a multi-letter substring", () => {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  for (const size of [1, 5, 9, 13, 19]) {
+    for (const first of alphabet) {
+      for (const second of alphabet) {
+        for (const coord of [`${first}${second}1`, ` ${first.toLowerCase()}${second.toLowerCase()}0${size} `]) {
+          assert.throws(() => coordToPoint(size, size, coord), Error, `${size}: ${coord}`);
+        }
+      }
+    }
+    for (const coord of ["ABC1", "HJK1", "ABCDEFGHJKLMNOPQRST1"]) {
+      assert.throws(() => coordToPoint(size, size, coord), Error, `${size}: ${coord}`);
+    }
+  }
+});
