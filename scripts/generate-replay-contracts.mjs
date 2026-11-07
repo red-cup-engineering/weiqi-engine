@@ -26,7 +26,9 @@ if (codeWorkReadout.status !== 'source-present-unassayed') throw new Error(JSON.
 const candidate = projectEngineeringDesignCode({ codeWorkReadout, cases: design.cases });
 if (!Array.isArray(candidate.packages) || candidate.packages.length !== 1)
   throw new Error('Expected one original Weiqi package projection');
-for (const file of candidate.packages[0].files) {
+// Runtime bindings remain generated from the original design. Behavioral tests
+// are maintained by this package; do not replace them with serialized snapshots.
+for (const file of candidate.packages[0].files.filter(file => !file.path.startsWith("test/"))) {
   const target = join(root, file.path);
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, file.text);

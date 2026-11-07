@@ -47,6 +47,21 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       assert.equal(kernel.countPosition(new kernel.Game(9, "chinese")).mode, "area");
     });
 
+    await t.test("generated sessions retain rescues by capture through saved replay", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      for (const color of [kernel.BLACK, kernel.WHITE]) {
+        const moves = ["C1", "B3", "B2", "B1", "A3", "A2"];
+        if (color === kernel.BLACK) moves.unshift("pass");
+        const commands = moves.map(move => move === "pass" ? { kind: "pass" } : { kind: "play", move });
+        const session = kernel.createWeiqiGameSession({ size: 3, ruleset: "chinese" }, commands);
+        const game = kernel.materializeWeiqiGame(JSON.parse(JSON.stringify(session)));
+        const rescues = game.moveEvents.at(-1).filter(event => event.type === "atari-escaped");
+        assert.deepEqual(rescues.map(event => event.detail), [{ color, groupSize: 1 }]);
+        assert.equal(game.current.board[kernel.coordToPoint(3, 3, "A3")], 0);
+        assert.equal(game.current.board[kernel.coordToPoint(3, 3, "B3")], color);
+      }
+    });
+
     await t.test("generated sessions report self-capture without teaching a false connection", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       for (const color of [kernel.BLACK, kernel.WHITE]) {
