@@ -6,8 +6,8 @@ import { BLACK, WHITE, createWeiqiGameSession, materializeWeiqiGame,
 
 // Build accepted frame evidence from the real engine command admission,
 // without borrowing a downstream Study renderer or a fictitious test helper.
-function admissionFrames(commands) {
-  let session = createWeiqiGameSession({ size: 9, ruleset: "chinese" });
+function admissionFrames(commands, config = { size: 9, ruleset: "chinese" }) {
+  let session = createWeiqiGameSession(config);
   const frames = [{ version: 0, mover: null, command: null, events: [] }];
   for (const command of commands) {
     const mover = session.state.toMove;
@@ -63,6 +63,22 @@ test("capturing one's own stones is not a recruiting feat", () => {
       events: [{ type: "capture", detail: { selfCapture: true } }] },
   ];
   assert.equal(planTacticalTryouts(frames).invitations.length, 0);
+});
+
+test("a real self-capture cannot become a connect-the-groups practice challenge", () => {
+  for (const color of [BLACK, WHITE]) {
+    const moves = ["A1", "A2", "C1", "C2", "pass", "B2", "B1"];
+    if (color === WHITE) moves.unshift("pass");
+    const commands = moves.map(move => move === "pass" ? { kind: "pass" } : { kind: "play", move });
+    const { frames } = admissionFrames(commands, { size: 3, ruleset: "newzealand" });
+    const received = planTacticalTryouts(frames, { color });
+    assert.deepEqual(received.invitations, []);
+    assert.deepEqual(received.evidence, []);
+    assert.equal(received.observedMoves, 3, "all actual placements remain recorded");
+    const opponent = planTacticalTryouts(frames, { color: color === BLACK ? WHITE : BLACK });
+    assert.ok(opponent.invitations.some(invitation => invitation.kind === "connection"),
+      "the other side's genuine surviving connection still qualifies");
+  }
 });
 
 test("engagement order is stable, source-addressed and input is immutable", () => {

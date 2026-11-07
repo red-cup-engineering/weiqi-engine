@@ -47,6 +47,27 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       assert.equal(kernel.countPosition(new kernel.Game(9, "chinese")).mode, "area");
     });
 
+    await t.test("generated sessions report self-capture without teaching a false connection", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      for (const color of [kernel.BLACK, kernel.WHITE]) {
+        const moves = ["A1", "A2", "C1", "C2", "pass", "B2"];
+        if (color === kernel.WHITE) moves.unshift("pass");
+        const commands = moves.map((move) => move === "pass" ? { kind: "pass" } : { kind: "play", move });
+        const session = kernel.createWeiqiGameSession({ size: 3, ruleset: "newzealand" }, commands);
+        const next = kernel.admitWeiqiGameCommand(session, session.version, { kind: "play", move: "B1" });
+        assert.equal(next.ok, true);
+        assert.deepEqual(next.events.map((event) => event.type), ["capture", "group-killed"]);
+        assert.equal(next.events[0].detail.selfCapture, true);
+        assert.equal(next.events[0].detail.stonesCaptured, 3);
+        assert.deepEqual(next.session.state.board.slice(0, 3), [0, 0, 0]);
+        assert.equal(next.session.state.toMove, color === kernel.BLACK ? kernel.WHITE : kernel.BLACK);
+        assert.equal(next.session.state[color === kernel.BLACK ? "capturedBlackStones" : "capturedWhiteStones"], 3);
+        const replay = kernel.materializeWeiqiGame(JSON.parse(JSON.stringify(next.session)));
+        assert.deepEqual(replay.moveEvents.at(-1), next.events);
+        assert.deepEqual([...replay.current.board], next.session.state.board);
+      }
+    });
+
     await t.test("generated sessions refuse a multi-letter column without changing the turn", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       const initial = kernel.createWeiqiGameSession({ size: 9, ruleset: "chinese" });

@@ -124,6 +124,61 @@ test("connection does not fire for a plain single-group extension", () => {
   assert.equal(events.some((e) => e.type === "connection"), false);
 });
 
+test("legal self-capture does not announce a connection between removed groups", () => {
+  for (const color of [BLACK, WHITE]) {
+    const game = new Game(3, "newzealand");
+    const moves = ["A1", "A2", "C1", "C2", "pass", "B2"];
+    if (color === WHITE) moves.unshift("pass");
+    for (const move of moves) assert.equal(game.play(move).ok, true, move);
+
+    const result = game.play("B1");
+    assert.equal(result.ok, true);
+    assert.deepEqual([...game.current.board.slice(0, 3)], [EMPTY, EMPTY, EMPTY]);
+    assert.equal(result.events.some((event) => event.type === "connection"), false);
+    assert.deepEqual(result.events.map((event) => event.type), ["capture", "group-killed"]);
+    assert.deepEqual(result.events[0].detail, {
+      point: "B1", by: color === BLACK ? WHITE : BLACK,
+      stonesCaptured: 3, groupsCaptured: 1, selfCapture: true,
+    });
+    assert.equal(result.events[1].detail.color, color);
+    assert.equal(result.events[1].detail.groupSize, 3);
+    assert.equal(result.events[1].detail.selfCapture, true);
+    assert.equal(game.current[color === BLACK ? "capturedBlackStones" : "capturedWhiteStones"], 3);
+    assert.deepEqual(game.moveEvents.at(-1), result.events);
+  }
+});
+
+test("suicide-illegal rules refuse the same join without adding any semantic event", () => {
+  for (const ruleset of ["chinese", "japanese", "aga", "ing"]) {
+    const game = new Game(3, ruleset);
+    for (const move of ["A1", "A2", "C1", "C2", "pass", "B2"]) {
+      assert.equal(game.play(move).ok, true, `${ruleset}: ${move}`);
+    }
+    const before = game.current;
+    const eventCount = game.moveEvents.length;
+    assert.deepEqual(game.play("B1"), { ok: false, reason: "suicide" }, ruleset);
+    assert.equal(game.current, before);
+    assert.equal(game.moveEvents.length, eventCount);
+  }
+});
+
+test("a surviving join still announces connection under every declared ruleset", () => {
+  for (const ruleset of ["chinese", "japanese", "aga", "newzealand", "ing"]) {
+    for (const color of [BLACK, WHITE]) {
+      const game = new Game(3, ruleset);
+      const moves = ["A1", "A3", "C1", "C3"];
+      if (color === WHITE) moves.unshift("pass");
+      for (const move of moves) assert.equal(game.play(move).ok, true);
+      const result = game.play("B1");
+      assert.equal(result.ok, true);
+      assert.deepEqual([...game.current.board.slice(0, 3)], [color, color, color]);
+      const connections = result.events.filter((event) => event.type === "connection");
+      assert.equal(connections.length, 1, `${ruleset}, color ${color}`);
+      assert.deepEqual(connections[0].detail, { point: "B1", color, mergedGroups: 2 });
+    }
+  }
+});
+
 test("eye-formed fires exactly once when a move completes a fully-enclosed empty point", () => {
   // 5x5: Black at B2, D2, C1 already on the board; Black plays C3, completing
   // a simple eye at C2 (all four of C2's neighbors are now Black), without
