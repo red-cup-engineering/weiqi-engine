@@ -192,7 +192,10 @@ export function admitWeiqiGameCommand(
   // game now represents precisely the accepted command prefix plus this
   // admissible new command. Snapshot that state; do not reconstruct it again.
   const next = sessionFromCommands(session.config, [...session.commands, command], game);
-  return Object.freeze({ ok: true, session: next, events: Object.freeze([...outcome.events]) });
+  // Game retains these nested semantic observations in moveEvents. Return
+  // detached observations, as materializeWeiqiGame does, so a view annotating
+  // its result cannot rewrite later Study/learning history in the private cache.
+  return Object.freeze({ ok: true, session: next, events: Object.freeze(structuredClone(outcome.events)) });
 }
 
 /**
