@@ -61,6 +61,20 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
         /game-info.*one node/i);
     });
 
+    await t.test("generated accepted observations cannot rewrite later replay lessons", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      const initial = kernel.createWeiqiGameSession({ size: 9, ruleset: "chinese" });
+      const accepted = kernel.admitWeiqiGameCommand(initial, 0, { kind: "pass" });
+      assert.equal(accepted.ok, true);
+      accepted.events[0].term = "capture";
+      accepted.events[0].detail.color = kernel.WHITE;
+      const replay = kernel.materializeWeiqiGame(accepted.session);
+      assert.equal(replay.moveEvents[0][0].term, "pass");
+      assert.equal(replay.moveEvents[0][0].detail.color, kernel.BLACK);
+      assert.deepEqual(replay.moveEvents,
+        kernel.materializeWeiqiGame(JSON.parse(JSON.stringify(accepted.session))).moveEvents);
+    });
+
     await t.test("generated sessions retain rescues by capture through saved replay", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       for (const color of [kernel.BLACK, kernel.WHITE]) {

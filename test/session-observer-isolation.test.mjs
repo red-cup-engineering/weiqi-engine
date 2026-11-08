@@ -13,6 +13,45 @@ function admitted(session, command) {
   return outcome.session;
 }
 
+test("accepted event observations cannot rewrite the retained game history", () => {
+  for (const moves of [["pass"], ["E4", "D4", "D3", "A1", "C4", "A2", "D5"]]) {
+    const commands = moves.map(move => move === "pass" ? { kind: "pass" } : { kind: "play", move });
+    const config = { size: 9, ruleset: "chinese" };
+    const before = createWeiqiGameSession(config, commands.slice(0, -1));
+    const accepted = admitWeiqiGameCommand(before, before.version, commands.at(-1));
+    assert.equal(accepted.ok, true);
+    const expected = structuredClone(accepted.events);
+    assert.ok(expected.length > 0, "exercise actual annotated events");
+    accepted.events[0].type = "invented-event";
+    accepted.events[0].term = "invented-concept";
+    accepted.events[0].detail.color = 999;
+    accepted.events[0].detail.extra = ["foreign"];
+    assert.deepEqual(materializeWeiqiGame(accepted.session).moveEvents.at(-1), expected);
+    assert.deepEqual(materializeWeiqiGame(JSON.parse(JSON.stringify(accepted.session))).moveEvents.at(-1), expected,
+      "warm and deserialized observations agree");
+    const next = admitted(accepted.session, { kind: "pass" });
+    assert.deepEqual(materializeWeiqiGame(next).moveEvents.at(-2), expected,
+      "a successor retains the original observation");
+    assert.deepEqual(accepted.session.commands, commands);
+  }
+});
+
+test("mutating an earlier result cannot rewrite an already-admitted successor", () => {
+  const initial = createWeiqiGameSession({ size: 9, ruleset: "japanese" });
+  const first = admitWeiqiGameCommand(initial, 0, { kind: "pass" });
+  const second = admitWeiqiGameCommand(first.session, 1, { kind: "pass" });
+  assert.equal(second.ok, true);
+  first.events[0].detail.color = WHITE;
+  second.events[1].detail.trigger = "foreign-endpoint";
+  const reread = materializeWeiqiGame(second.session);
+  assert.equal(reread.moveEvents[0][0].detail.color, BLACK);
+  assert.equal(reread.moveEvents[1][1].detail.trigger, "two-consecutive-passes");
+  assert.equal(reread.passStreak, 2);
+  assert.deepEqual(admitWeiqiGameCommand(second.session, 1, { kind: "pass" }),
+    { ok: false, reason: "version-mismatch", expectedVersion: 1, actualVersion: 2 });
+  assert.equal(admitted(second.session, { kind: "settle", dead: [] }).state.result.by, "count");
+});
+
 test("a writable observer board cannot contaminate the cached initial game", () => {
   const session = createWeiqiGameSession({ size: 9, ruleset: "chinese" });
   const foreign = materializeWeiqiGame(session);
