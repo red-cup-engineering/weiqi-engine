@@ -168,6 +168,27 @@ test("upstream browser kernel is complete, generated and importable", async (t) 
       assert.equal(game.history.length, session.version + 1, "search leaves the real game unchanged");
     });
 
+    await t.test("generated Monte Carlo policies complete legal New Zealand corner-fight searches", async () => {
+      const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
+      const policies = await import(pathToFileURL(join(destination, "policies.mjs")).href);
+      for (const size of [9, 13, 19]) {
+        const session = kernel.createWeiqiGameSession({ size, ruleset: "newzealand" },
+          ["A1", "B1", "C3", "B3", "C1", "C2", "A3", "B2"]
+            .map((move) => ({ kind: "play", move })));
+        const game = kernel.materializeWeiqiGame(JSON.parse(JSON.stringify(session)));
+        const progress = [];
+        const move = policies.chooseMonteCarloMove(game, kernel, () => 0.37,
+          { playouts: 8, maxPlayoutMoves: 0, onProgress: (update) => progress.push(update) });
+        assert.equal(progress.at(-1).completed, 8);
+        assert.ok(policies.candidateMoveCoords(game, kernel).includes(move));
+        const admitted = kernel.admitWeiqiGameCommand(session, session.version, { kind: "play", move });
+        assert.equal(admitted.ok, true);
+        assert.equal(admitted.session.version, session.version + 1);
+        assert.deepEqual([...game.current.board], session.state.board,
+          "worker search must not play on the user's accepted session");
+      }
+    });
+
     await t.test("generated SGF import refuses empty variations without losing valid empty nodes", async () => {
       const kernel = await import(pathToFileURL(join(destination, "index.mjs")).href);
       for (const text of ["(;GM[1]SZ[9];B[aa]()(;W[bb]))",
