@@ -66,6 +66,15 @@ pass early on an unsettled handicap board. Source and generated-browser tests
 exercise all five tiers, with both colors and all four area rulesets checked
 against actual forked-game counts.
 
+Monte Carlo tree expansion uses that same history-qualified candidate policy
+at every depth, not the random rollout's raw empty points. Tactical ranking
+therefore never reads a stone that disappeared through self-capture or spends
+its candidate shortlist on moves forbidden by ko. This prevents Pondering
+from failing during ordinary New Zealand corner fights. Native and generated
+browser tests cover legal replies and unchanged accepted games; the underlying
+self-capture rules and random-rollout policy are unchanged. Filtering replies
+adds work per expansion and is not a playing-strength or latency guarantee.
+
 ## Running tests
 
 The Node suite uses behavioral unit tests, exhaustive small-board properties and

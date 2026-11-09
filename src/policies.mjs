@@ -500,10 +500,13 @@ function rankedMoves(game, kernel, coordinates, rng) {
 /** Internal UCT positions need actionable candidate breadth too: otherwise
  * the next turn is as diluted as the 19x19 root used to be. */
 function expandChildren(trial, kernel, rng, playouts) {
-  const { board, toMove } = trial.current;
-  const points = playoutCandidates(kernel, board, trial.size, toMove);
-  const width = searchCandidateWidth(points.length, playouts);
-  const moves = points.map((point) => kernel.pointToCoord(trial.size, point));
+  const { toMove } = trial.current;
+  // Rank the same history-qualified, non-self-harming continuations as
+  // the root. Raw empty points can include ko-forbidden moves and legal
+  // self-captures whose placed stone no longer exists for tactical reading.
+  // The random rollout's broader candidates are not tree-search candidates.
+  const moves = candidateMoveCoords(trial, kernel);
+  const width = searchCandidateWidth(moves.length, playouts);
   return rankedMoves(trial, kernel, moves, rng)
     .slice(0, width).map((coord) => treeNode(coord, toMove));
 }
