@@ -46,7 +46,7 @@
     "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
   },
   "devDependencies": {
-    "@red-cup-engineering/json-services-section": "0.4.0",
+    "@red-cup-engineering/json-engineering-services-section": "0.4.0",
     "@red-cup-engineering/signcell": "0.4.2"
   }
 }

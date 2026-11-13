@@ -1,7 +1,7 @@
 import { admit } from "@red-cup-engineering/signcell/type-system";
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { canonicalizeJson as __factoryCanonicalize, JSON_RESOURCE_ENVELOPE as __factoryJsonBounds } from "@red-cup-engineering/json-services-section/canonical-json";
+import { canonicalizeJson as __factoryCanonicalize, JSON_RESOURCE_ENVELOPE as __factoryJsonBounds } from "@red-cup-engineering/json-engineering-services-section/canonical-json";
 import { isPromise as __factoryIsPromise } from "node:util/types";
 import { isProxy as __factoryIsProxy } from "node:util/types";
 /** Generated from specifications/*.schema.json. Do not edit. */
