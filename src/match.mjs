@@ -7,8 +7,8 @@
  * `stateHash` carried in a match are derived checkpoints: the Cartridge log
  * remains the record from which they are rebuilt.
  */
-import { appendMove } from "@red-cup-engineering/gaming/running/play-record";
-import { hashPosition } from "@red-cup-engineering/gaming/running/rules";
+import { appendMove } from "@red-cup-engineering/game-engine/running/play-record";
+import { hashPosition } from "@red-cup-engineering/game-engine/running/rules";
 import { BLACK, WHITE } from "./board.mjs";
 import { configIdentifier } from "./replay.mjs";
 import {

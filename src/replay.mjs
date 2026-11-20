@@ -6,7 +6,7 @@
  * It neither replaces SGF (the public interchange format) nor invents a
  * second intent-log or hash rule.
  */
-import { playVerifier, replayPlay } from "@red-cup-engineering/gaming/running/rules";
+import { playVerifier, replayPlay } from "@red-cup-engineering/game-engine/running/rules";
 import {
   admitWeiqiGameCommand,
   createWeiqiGameSession,
