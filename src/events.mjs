@@ -21,15 +21,9 @@
 //     which is a life-and-death-shaped question ("could this shape have
 //     lived as one group"), not a same-move board diff. Add it once
 //     cut.md exists and pins down what "connectable" means.
-//   - false-eye / seki: eye.md, false-eye.md, and seki.md each describe
-//     conditions (diagonal control, mutually-unfillable shared liberties)
-//     that require reading whether a group can live, not just diffing one
-//     move's board. eye-formed below already ships the smallest sound
-//     approximation available to a pure move-diff (a "simple eye": every
-//     orthogonal neighbor is the same color, no diagonal check) and is
-//     documented as such; false-eye and seki need a real life-and-death
-//     solver, which this module is not, so they are not represented here
-//     rather than shipped wrong.
+//   - false-eye / seki: the local test below confirms only protected
+//     one-point shapes. A position that fails it can still have a living
+//     group or a larger eye. Neither life nor seki is inferred here.
 //   - liberty / territory / dame / superko: liberty is already the
 //     currency atari/capture are defined in terms of, not an event of its
 //     own; territory and dame are whole-board, end-of-game scoring facts
@@ -71,13 +65,24 @@ function mkEvent(type, term, detail) {
   return { type, term, termRef: TERM_REFERENCES[term], detail };
 }
 
-/** A "simple eye" test: every orthogonal neighbor of `point` is `color` (edges/corners satisfied trivially by having fewer neighbors). No diagonal-control check — see the limitation note in the package README. */
-function isSimpleEye(board, width, height, point, color) {
-  if (board[point] !== 0) return false;
-  for (const n of neighbors(width, height, point)) {
-    if (board[n] !== color) return false;
+function diagonals(width, height, point) {
+  const x = point % width;
+  const y = Math.floor(point / width);
+  const result = [];
+  for (const row of [y - 1, y + 1]) {
+    if (row < 0 || row >= height) continue;
+    for (const col of [x - 1, x + 1]) {
+      if (col >= 0 && col < width) result.push(row * width + col);
+    }
   }
-  return true;
+  return result;
+}
+
+function isSimpleEye(board, width, height, point, color) {
+  if (board[point] !== 0 || !neighbors(width, height, point).every(n => board[n] === color)) return false;
+  const corners = diagonals(width, height, point);
+  const required = corners.length === 4 ? 3 : corners.length;
+  return corners.filter(n => board[n] === color).length >= required;
 }
 
 export function annotateMove(input) {
@@ -221,10 +226,8 @@ export function annotateMove(input) {
     }
   }
 
-  // eye-formed: empty points adjacent to the played stone that just
-  // transitioned into being a simple eye for `color` (all neighbors now
-  // that color) and were not a simple eye immediately before this move.
-  for (const n of neighbors(width, height, point)) {
+  // The last supporting stone can touch the eye on a side or a diagonal.
+  for (const n of [...neighbors(width, height, point), ...diagonals(width, height, point)]) {
     if (nextPosition.board[n] === 0) {
       const wasEye = isSimpleEye(prevPosition.board, width, height, n, color);
       const isEyeNow = isSimpleEye(nextPosition.board, width, height, n, color);

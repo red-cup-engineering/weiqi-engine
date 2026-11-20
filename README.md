@@ -312,8 +312,10 @@ as a transitional tick; only admitted settlement or resignation is terminal.
 needs a real life-and-death read (or, for `cut`, a `cut.md` that doesn't exist yet), not a
 sound one-move board diff. `events.mjs`'s module doc explains each deferral; house doctrine is
 that this code stays a sound model of the theory rather than merely something that runs.
-`eye-formed` itself ships only the smallest sound approximation available to a move diff (a
-"simple eye": every orthogonal neighbor the same color, no diagonal-control check).
+`eye-formed` identifies a protected one-point eye. All orthogonal neighbors must
+belong to the player, together with the single corner diagonal, both edge
+diagonals, or at least three interior diagonals. A move can complete the eye
+from either direction. One eye alone does not establish that the group lives.
 
 
 ## Generated replay factory contracts
