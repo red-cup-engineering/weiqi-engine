@@ -33,7 +33,7 @@ const __engineeringCodeSourceSchema = __freezeGeneratedSchema(JSON.parse("{\"con
   return __engineeringCodeSourceSchema.const;
 })();
 export async function checkedOperation0(input) {
-  const validateReferenceData = value => {
+  const admitReferenceData = value => {
     // Detect active carriers before any reflective traversal can activate a
     // Proxy trap. The original JSON supplier still owns JSON semantics/bounds.
     const pending = [value], seen = new WeakSet();
@@ -74,7 +74,7 @@ export async function checkedOperation0(input) {
     return __factoryCanonicalize(value, __factoryJsonBounds);
   };
   const policy = JSON.parse("{\"maxArguments\":2,\"maxCalls\":16,\"methods\":[\"initialPosition\",\"extend\"],\"resultReferences\":{\"maxPathLength\":1}}");
-  const request = JSON.parse(validateReferenceData(input).text);
+  const request = JSON.parse(admitReferenceData(input).text);
   const exact = (value, keys) => value !== null && typeof value === "object" && !Array.isArray(value) &&
     Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key));
   const args = value => Array.isArray(value) && value.length <= policy.maxArguments;
@@ -129,7 +129,7 @@ export async function checkedOperation0(input) {
       const record = results[reference.result];
       if (!record?.ok || record.value === undefined) throw new TypeError("Design result-reference target unavailable");
       if (!validated.has(reference.result)) {
-        validateReferenceData(record.value);
+        admitReferenceData(record.value);
         validated.add(reference.result);
       }
       let selected = record.value;
@@ -158,7 +158,7 @@ export async function checkedOperation0(input) {
     // Keep observation outside the source-method catch: malformed output and
     // exhausted JSON budgets must never masquerade as an expected source error.
     const observation = failure ?? (value === undefined ? {status: "returned"} : {status: "returned", value});
-    const snapshot = validateReferenceData(observation);
+    const snapshot = admitReferenceData(observation);
     observationBytes += snapshot.byteLength + (output.length ? 1 : 0);
     if (observationBytes > __factoryJsonBounds.maxCanonicalBytes)
       throw new TypeError("Design factory observation byte bound exceeded");

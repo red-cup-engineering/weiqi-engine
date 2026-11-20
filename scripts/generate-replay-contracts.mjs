@@ -16,14 +16,14 @@ const carrier = join(root, 'specifications/replay-factory-design.json');
 const design = JSON.parse(await readFile(carrier, 'utf8'));
 const text = await readFile(join(root, 'src/replay.mjs'), 'utf8');
 const expectedSha256 = 'sha256:' + createHash('sha256').update(text).digest('hex');
-const codeWorkReport = readEngineeringCodeWork({
+const codeWorkReadout = readEngineeringCodeWork({
   designCandidate: design.low,
   originalPlan: design.plan,
   originalDeliveryText: design.delivery,
   sourceViews: [{ owner: 'red-cup-engineering/weiqi-engine', path: 'src/replay.mjs', text, expectedSha256 }],
 });
-if (codeWorkReport.status !== 'source-present-unassayed') throw new Error(JSON.stringify(codeWorkReport));
-const candidate = projectEngineeringDesignCode({ codeWorkReadout: codeWorkReport, cases: design.cases });
+if (codeWorkReadout.status !== 'source-present-unassayed') throw new Error(JSON.stringify(codeWorkReadout));
+const candidate = projectEngineeringDesignCode({ codeWorkReadout, cases: design.cases });
 if (!Array.isArray(candidate.packages) || candidate.packages.length !== 1)
   throw new Error('Expected one original Weiqi package projection');
 // Runtime bindings remain generated from the original design. Behavioral tests
@@ -33,5 +33,5 @@ for (const file of candidate.packages[0].files.filter(file => !file.path.startsW
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, file.text);
 }
-await writeFile(carrier, JSON.stringify({ ...design, codeWorkReadout: codeWorkReport }, null, 2));
+await writeFile(carrier, JSON.stringify({ ...design, codeWorkReadout }, null, 2));
 console.log(`Generated original replay contracts for ${expectedSha256}`);
