@@ -31,7 +31,8 @@
     "@red-cup-engineering/json-engine": "^0.5.0",
     "@red-cup-engineering/typed-content": "^0.1.0",
     "@red-cup-engineering/project-browser-asset-tree-computer-systems-publishing-engineering-services-section": "0.4.7-dev.0",
-    "@red-cup-engineering/game-engine": "0.1.0-dev.0"
+    "@red-cup-engineering/game-engine": "0.1.0-dev.0",
+    "@red-cup-engineering/signcell": "^0.18.0 || 0.18.1-dev.0"
   },
   "private": false,
   "funding": {

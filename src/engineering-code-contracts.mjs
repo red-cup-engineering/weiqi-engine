@@ -1,3 +1,4 @@
+import { deepFreeze } from "@red-cup-engineering/signcell/values";
 import { admit } from "@red-cup-engineering/typed-content";
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
@@ -6,16 +7,10 @@ import { isPromise as __factoryIsPromise } from "node:util/types";
 import { isProxy as __factoryIsProxy } from "node:util/types";
 /** Generated from specifications/*.schema.json. Do not edit. */
 import { defineSchemaType } from "@red-cup-engineering/typed-content";
-const __freezeGeneratedSchema = value => {
-  if (value !== null && typeof value === "object") {
-    for (const child of Object.values(value)) __freezeGeneratedSchema(child);
-    Object.freeze(value);
-  }
-  return value;
-};
-export const __inputSchema0 = __freezeGeneratedSchema(JSON.parse("{\"$id\":\"https://schemas.561.group/engineering/unadmitted/2Ts3hF71XdbGAwd_rZAdP0E2zdcfvKvxi2gPQPy-pfU/replay-engine/input\",\"title\":\"replay-engine input\",\"description\":\"Source-observed LLD candidate; semantic Proof unreceived\",\"additionalProperties\":false,\"properties\":{\"arguments\":{\"maxItems\":2,\"type\":\"array\"},\"calls\":{\"items\":{\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"}},\"required\":[\"arguments\",\"calls\"],\"type\":\"object\"}"));
 
-export const __outputSchema0 = __freezeGeneratedSchema(JSON.parse("{\"$id\":\"https://schemas.561.group/engineering/unadmitted/2Ts3hF71XdbGAwd_rZAdP0E2zdcfvKvxi2gPQPy-pfU/replay-engine/output\",\"title\":\"replay-engine output\",\"description\":\"Source-observed LLD candidate; semantic Proof unreceived\",\"items\":{\"properties\":{\"status\":{\"enum\":[\"returned\",\"threw\"]}},\"required\":[\"status\"],\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"}"));
+export const __inputSchema0 = deepFreeze(JSON.parse("{\"$id\":\"https://schemas.561.group/engineering/unadmitted/2Ts3hF71XdbGAwd_rZAdP0E2zdcfvKvxi2gPQPy-pfU/replay-engine/input\",\"title\":\"replay-engine input\",\"description\":\"Source-observed LLD candidate; semantic Proof unreceived\",\"additionalProperties\":false,\"properties\":{\"arguments\":{\"maxItems\":2,\"type\":\"array\"},\"calls\":{\"items\":{\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"}},\"required\":[\"arguments\",\"calls\"],\"type\":\"object\"}"));
+
+export const __outputSchema0 = deepFreeze(JSON.parse("{\"$id\":\"https://schemas.561.group/engineering/unadmitted/2Ts3hF71XdbGAwd_rZAdP0E2zdcfvKvxi2gPQPy-pfU/replay-engine/output\",\"title\":\"replay-engine output\",\"description\":\"Source-observed LLD candidate; semantic Proof unreceived\",\"items\":{\"properties\":{\"status\":{\"enum\":[\"returned\",\"threw\"]}},\"required\":[\"status\"],\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"}"));
 
 export const __inputType0 = defineSchemaType(__inputSchema0);
 export const __outputType0 = defineSchemaType(__outputSchema0);

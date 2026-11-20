@@ -1,3 +1,4 @@
+import { isNonEmptyString } from "@red-cup-engineering/signcell/values";
 /**
  * The durable-match semantic core.
  *
@@ -40,9 +41,7 @@ function commandEqual(left, right) {
   return true;
 }
 
-function isPrincipal(value) {
-  return typeof value === "string" && value.length > 0;
-}
+
 
 function isExpectedVersion(value) {
   return Number.isSafeInteger(value) && value >= 0;
@@ -84,7 +83,7 @@ function admissionRefusal(players, session, principal, command) {
 }
 
 function validatePlayers(players) {
-  if (!isPrincipal(players.black) || !isPrincipal(players.white) || players.black === players.white) {
+  if (!isNonEmptyString(players.black) || !isNonEmptyString(players.white) || players.black === players.white) {
     throw new TypeError("Weiqi match players must be two distinct non-empty principal references");
   }
 }
@@ -108,8 +107,8 @@ function rebuild(config, players, log) {
     const intent = entry.intent;
     if (
       intent.kind !== "weiqi-command" ||
-      !isPrincipal(intent.principal) ||
-      !isPrincipal(intent.idempotencyKey) ||
+      !isNonEmptyString(intent.principal) ||
+      !isNonEmptyString(intent.idempotencyKey) ||
       !isExpectedVersion(intent.expectedRevision) ||
       intent.configId !== expectedConfigId ||
       !isCommand(intent.command) ||
@@ -182,7 +181,7 @@ export function admitWeiqiMatchCommand(
 ) {
   const checked = verifyWeiqiMatch(match);
   if (!checked.valid) return Object.freeze({ ok: false, reason: "invalid-match" });
-  if (!Number.isFinite(receivedAt) || !isPrincipal(request?.principal) || !isPrincipal(request?.idempotencyKey) || !isExpectedVersion(request?.expectedRevision) || !isCommand(request?.command)) {
+  if (!Number.isFinite(receivedAt) || !isNonEmptyString(request?.principal) || !isNonEmptyString(request?.idempotencyKey) || !isExpectedVersion(request?.expectedRevision) || !isCommand(request?.command)) {
     return Object.freeze({ ok: false, reason: "invalid-request" });
   }
   const existing = match.log.find((entry) => entry.intent.idempotencyKey === request.idempotencyKey);
