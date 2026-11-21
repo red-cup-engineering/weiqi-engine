@@ -1,7 +1,7 @@
-// Portable, deterministic match-session admission.
+// Deterministic game sessions and versioned move execution.
 //
 // This is deliberately not a server: principals, durable storage, clocks,
-// channels, and Cartridge state hashes belong at explicit effect boundaries.
+// channels, and replay state hashes belong at explicit effect boundaries.
 // It gives every such boundary (and the browser client) one versioned command
 // record and one replayable rules decision.
 import { BLACK, WHITE, coordToPoint } from "./board.mjs";
@@ -172,7 +172,7 @@ export function materializeWeiqiGame(session) {
  * contains no I/O; a server may persist the accepted command before exposing
  * this new session, while a browser can render it directly.
  */
-export function admitWeiqiGameCommand(
+export function applyWeiqiGameCommand(
   session,
   expectedVersion,
   command,
@@ -265,3 +265,6 @@ export function weiqiSessionToSgfRecord(session) {
   if (result !== undefined) record.result = result;
   return Object.freeze(record);
 }
+
+// Retain the public name used by earlier games.
+export const admitWeiqiGameCommand = applyWeiqiGameCommand;

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createWeiqiMatch, admitWeiqiMatchCommand, verifyWeiqiMatch } from "@red-cup-engineering/weiqi-engine/match";
+import { createWeiqiMatch, applyWeiqiMatchCommand, verifyWeiqiMatch } from "@red-cup-engineering/weiqi-engine/match";
 import { replayWeiqi, verifyWeiqiIntentLog } from "@red-cup-engineering/weiqi-engine/replay";
 
 test("the shared game engine preserves the 0.3.5 logged move and checkpoint", () => {
@@ -8,7 +8,7 @@ test("the shared game engine preserves the 0.3.5 logged move and checkpoint", ()
   const command = { kind: "play", move: "E5" };
   const match = createWeiqiMatch(config, { black: "black", white: "white" });
   const request = { principal: "black", idempotencyKey: "one", expectedRevision: 0, command };
-  const accepted = admitWeiqiMatchCommand(match, request, 100);
+  const accepted = applyWeiqiMatchCommand(match, request, 100);
   assert.ok(accepted.ok);
   assert.deepEqual(accepted.match.log, [{ seq: 0, intent: {
     kind: "weiqi-command", principal: "black", idempotencyKey: "one",
@@ -16,7 +16,7 @@ test("the shared game engine preserves the 0.3.5 logged move and checkpoint", ()
   }, ts: 100 }]);
   assert.equal(accepted.match.stateHash, "68b22901454f12265af4cd2f1cbede654cfd925c994d1695ab62ee6d08eed332");
   assert.ok(verifyWeiqiMatch(accepted.match).valid);
-  assert.ok(admitWeiqiMatchCommand(accepted.match, request, 101).duplicate);
+  assert.ok(applyWeiqiMatchCommand(accepted.match, request, 101).duplicate);
   const replay = replayWeiqi(config, [command]);
   const checked = verifyWeiqiIntentLog(config, [{ seq: 0, intent: command, ts: 100 }]);
   assert.ok(replay.valid && checked.valid);

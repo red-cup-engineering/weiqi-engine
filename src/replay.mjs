@@ -6,9 +6,9 @@
  * It neither replaces SGF (the public interchange format) nor invents a
  * second intent-log or hash rule.
  */
-import { playVerifier, replayPlay } from "@red-cup-engineering/game-engine/running/rules";
+import { createReplayVerifier, replayMoves } from "@red-cup-engineering/game-engine/running/rules";
 import {
-  admitWeiqiGameCommand,
+  applyWeiqiGameCommand,
   createWeiqiGameSession,
 
 } from "./session.mjs";
@@ -54,7 +54,7 @@ export function createWeiqiGameEngine(config) {
         throw new TypeError("Weiqi replay state belongs to a different engine configuration");
       }
       const session = sessions.get(state) ?? createWeiqiGameSession(frozenConfig, state.commands);
-      const outcome = admitWeiqiGameCommand(session, session.version, intent);
+      const outcome = applyWeiqiGameCommand(session, session.version, intent);
       if (!outcome.ok) throw new TypeError(`Illegal Weiqi intent: ${outcome.reason}`);
       return Object.freeze({
         state: remember(outcome.session),
@@ -77,7 +77,7 @@ export function replayWeiqi(
   seed = "weiqi-deterministic",
 ) {
   const engine = createWeiqiGameEngine(config);
-  return replayPlay(engine, seed, intents, configIdentifier(config));
+  return replayMoves(engine, seed, intents, configIdentifier(config));
 }
 
 export function verifyWeiqiIntentLog(
@@ -85,5 +85,5 @@ export function verifyWeiqiIntentLog(
   entries,
   seed = "weiqi-deterministic",
 ) {
-  return playVerifier(createWeiqiGameEngine(config))(seed, configIdentifier(config), entries);
+  return createReplayVerifier(createWeiqiGameEngine(config))(seed, configIdentifier(config), entries);
 }

@@ -8,7 +8,7 @@
  */
 export function planReplayMoments(frames, { limit = 9 } = {}) {
   if (!Array.isArray(frames) || frames.length === 0) {
-    throw new TypeError("Replay requires at least the admitted opening frame");
+    throw new TypeError("Replay requires at least the opening position");
   }
   if (!Number.isSafeInteger(limit) || limit < 2 || limit > 30) {
     throw new RangeError("Replay highlight limit must be an integer from 2 to 30");

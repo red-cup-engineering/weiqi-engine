@@ -4,8 +4,8 @@ import { isNonEmptyString } from "@red-cup-engineering/signcell/values";
  *
  * A match is not a socket, database row, or presence channel. Its only
  * authority is to turn an ordered, principal-attributed request into one
- * Cartridge entry that the Weiqi rules engine accepts. The `session` and
- * `stateHash` carried in a match are derived checkpoints: the Cartridge log
+ * move record entry that the Weiqi rules engine accepts. The `session` and
+ * `stateHash` carried in a match are derived checkpoints: the move log
  * remains the record from which they are rebuilt.
  */
 import { appendMove } from "@red-cup-engineering/game-engine/running/play-record";
@@ -13,13 +13,13 @@ import { hashPosition } from "@red-cup-engineering/game-engine/running/rules";
 import { BLACK, WHITE } from "./board.mjs";
 import { configIdentifier } from "./replay.mjs";
 import {
-  admitWeiqiGameCommand,
+  applyWeiqiGameCommand,
   createWeiqiGameSession,
   isWeiqiGameCommand,
 
 } from "./session.mjs";
 
-/** The only durable game-domain payload inside a Cartridge entry. */
+/** The only durable game-domain payload inside a move record entry. */
 
 /** A settlement one principal has proposed that the other has not yet matched. */
 
@@ -68,7 +68,7 @@ function principalColor(players, principal) {
  * any time while the game is open; a settlement may come from either player
  * once the main phase has ended. Returns the refusal reason or null.
  */
-function admissionRefusal(players, session, principal, command) {
+function commandAuthorizationError(players, session, principal, command) {
   if (command.kind === "resign") {
     if (session.state.result !== null) return "illegal-command";
     return principalColor(players, principal) === command.color ? null : "not-your-color";
@@ -115,16 +115,16 @@ function rebuild(config, players, log) {
       idempotencyKeys.has(intent.idempotencyKey)
     ) throw new TypeError("Weiqi match log contains an invalid or duplicate command envelope");
     if (intent.expectedRevision !== index) throw new TypeError("Weiqi match log command does not name its prior accepted revision");
-    const refusal = admissionRefusal(frozenPlayers, session, intent.principal, intent.command);
+    const refusal = commandAuthorizationError(frozenPlayers, session, intent.principal, intent.command);
     if (refusal !== null) throw new TypeError(`Weiqi match log command is not admissible: ${refusal}`);
     if (intent.command.kind === "settle" && !(pendingSettlement !== null && pendingSettlement.principal !== intent.principal && sameDead(pendingSettlement.dead, intent.command.dead))) {
       // A settlement needs both players' identical agreement: the first
       // (or a differing counter-proposal) is recorded and waits.
       pendingSettlement = Object.freeze({ principal: intent.principal, dead: Object.freeze(normalizedDead(intent.command.dead)) });
     } else {
-      const admitted = admitWeiqiGameCommand(session, session.version, intent.command);
-      if (!admitted.ok) throw new TypeError(`Weiqi match log command is not legal: ${admitted.reason}`);
-      session = admitted.session;
+      const outcome = applyWeiqiGameCommand(session, session.version, intent.command);
+      if (!outcome.ok) throw new TypeError(`Weiqi match log command is not legal: ${outcome.reason}`);
+      session = outcome.session;
       pendingSettlement = null;
     }
     idempotencyKeys.add(intent.idempotencyKey);
@@ -151,7 +151,7 @@ function rebuild(config, players, log) {
   });
 }
 
-/** Creates an empty match with two already-admitted principals. */
+/** Creates an empty match with two registered players. */
 export function createWeiqiMatch(config, players) {
   return rebuild(config, players, []);
 }
@@ -172,9 +172,9 @@ export function verifyWeiqiMatch(match) {
 /**
  * Accepts one authenticated-principal request using an injected received-at
  * timestamp. A duplicate idempotency key returns the already-derived match;
- * it never appends a second Cartridge command.
+ * it never appends a second recorded command.
  */
-export function admitWeiqiMatchCommand(
+export function applyWeiqiMatchCommand(
   match,
   request,
   receivedAt,
@@ -198,17 +198,17 @@ export function admitWeiqiMatchCommand(
   if (request.principal !== match.players.black && request.principal !== match.players.white) {
     return Object.freeze({ ok: false, reason: "unknown-principal" });
   }
-  const refusal = admissionRefusal(match.players, match.session, request.principal, request.command);
+  const refusal = commandAuthorizationError(match.players, match.session, request.principal, request.command);
   if (refusal !== null) return Object.freeze({ ok: false, reason: refusal });
   const proposes = request.command.kind === "settle" && !(match.pendingSettlement !== null && match.pendingSettlement.principal !== request.principal && sameDead(match.pendingSettlement.dead, request.command.dead));
   if (proposes) {
     // The engine will count once the other player matches; the proposal itself
     // must still name real stones, so check it against the engine now.
-    const trial = admitWeiqiGameCommand(match.session, match.session.version, request.command);
+    const trial = applyWeiqiGameCommand(match.session, match.session.version, request.command);
     if (!trial.ok) return Object.freeze({ ok: false, reason: "illegal-command" });
   }
-  const admitted = proposes ? null : admitWeiqiGameCommand(match.session, match.session.version, request.command);
-  if (admitted !== null && !admitted.ok) return Object.freeze({ ok: false, reason: "illegal-command" });
+  const outcome = proposes ? null : applyWeiqiGameCommand(match.session, match.session.version, request.command);
+  if (outcome !== null && !outcome.ok) return Object.freeze({ ok: false, reason: "illegal-command" });
   const intent = Object.freeze({
     kind: "weiqi-command",
     principal: request.principal,
@@ -220,5 +220,8 @@ export function admitWeiqiMatchCommand(
   const nextLog = appendMove(match.log, intent, { ts: receivedAt });
   const next = rebuild(match.config, match.players, nextLog);
   if (proposes) return Object.freeze({ ok: true, duplicate: false, proposed: true, match: next, events: Object.freeze([]) });
-  return Object.freeze({ ok: true, duplicate: false, match: next, events: admitted.events });
+  return Object.freeze({ ok: true, duplicate: false, match: next, events: outcome.events });
 }
+
+// Retain the public name used by earlier games.
+export const admitWeiqiMatchCommand = applyWeiqiMatchCommand;

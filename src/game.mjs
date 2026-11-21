@@ -204,7 +204,7 @@ export class Game {
     return { ok: true, events, passStreak: 0 };
   }
 
-  /** `color` resigns: the opponent wins and no further move is admitted. Refused once the game has ended. */
+  /** `color` resigns: the opponent wins and the game accepts no further moves. Refused once the game has ended. */
   resign(color) {
     if (this.result !== null) return { ok: false, reason: "game-ended" };
     if (color !== BLACK && color !== WHITE) return { ok: false, reason: "game-ended" };
@@ -215,7 +215,7 @@ export class Game {
   /**
    * Count the game with the stones at `dead` (Go coordinates) removed as
    * prisoners, under this ruleset's own scoring mode, and end it. Only
-   * admitted after two consecutive passes (pass.md / R12); dead-stone
+   * allowed after two consecutive passes (pass.md / R12); dead-stone
    * settlement is an agreement between the players, never a rules fact
    * (dead-stones.md), so the caller supplies it. A coordinate that is not
    * a stone is refused rather than ignored. The active pass streak must be
@@ -317,7 +317,7 @@ export function countPosition(game, deadPoints = []) {
   const territory = computeTerritory(position);
   // This is the single rules-owned score boundary for both provisional
   // counts and accepted game results. Session snapshots expose this object;
-  // its values must not be writable after a command has been admitted.
+  // its values must not be writable after a command has been applied.
   const score = Object.freeze(mode === "territory"
     ? scoreTerritory(position, game.ruleset, territory, game.handicap)
     : scoreArea(position, game.ruleset, territory, game.handicap));

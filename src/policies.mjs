@@ -334,7 +334,7 @@ export function chooseInfluenceMove(game, kernel, rng = Math.random) {
 // moves. The first tier that looks past one move, and still no second
 // engine: every playout is the kernel's own Game playing random legal moves
 // to the end, every playout uses the kernel's own ruleset-selected count, and
-// every node of the tree is a kernel-admitted move.
+// every node of the tree is a legal move.
 //
 // Measured 2026-09-16 on 9x9 against Watchful, ten games each, 400
 // playouts: flat Monte Carlo (no tree) won 5; adding the classic playout
