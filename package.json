@@ -28,11 +28,12 @@
     "README.md"
   ],
   "dependencies": {
-    "@red-cup-engineering/json-engine": "^0.5.0",
-    "@red-cup-engineering/typed-content": "^0.1.0",
-    "@red-cup-engineering/project-browser-asset-tree-computer-systems-publishing-engineering-services-section": "git+https://github.com/red-cup-engineering/project-browser-asset-tree-computer-systems-publishing-engineering-services-section.git#7901f25bdc5915c03d6163aa0efcb8342e769768",
     "@red-cup-engineering/game-engine": "git+https://github.com/red-cup-engineering/game-engine.git#61e327de38b72106d2a843e1788bb1faa76b01bd",
-    "@red-cup-engineering/signcell": "^0.18.1 || 0.18.1-dev.0"
+    "@red-cup-engineering/json-engine": "^0.5.0",
+    "@red-cup-engineering/project-browser-asset-tree-computer-systems-publishing-engineering-services-section": "git+https://github.com/red-cup-engineering/project-browser-asset-tree-computer-systems-publishing-engineering-services-section.git#7901f25bdc5915c03d6163aa0efcb8342e769768",
+    "@red-cup-engineering/semiotic-content-address-system": "0.1.9",
+    "@red-cup-engineering/signcell": "^0.18.1 || 0.18.1-dev.0",
+    "@red-cup-engineering/typed-content": "^0.1.0"
   },
   "private": false,
   "funding": {

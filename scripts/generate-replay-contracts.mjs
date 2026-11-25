@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { createHash } from 'node:crypto';
+import { sha256Hex } from "@red-cup-engineering/semiotic-content-address-system";
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -15,7 +15,7 @@ const root = resolve(import.meta.dirname, '..');
 const carrier = join(root, 'specifications/replay-factory-design.json');
 const design = JSON.parse(await readFile(carrier, 'utf8'));
 const text = await readFile(join(root, 'src/replay.mjs'), 'utf8');
-const expectedSha256 = 'sha256:' + createHash('sha256').update(text).digest('hex');
+const expectedSha256 = 'sha256:' + sha256Hex(text);
 const codeWorkReadout = readEngineeringCodeWork({
   designCandidate: design.low,
   originalPlan: design.plan,

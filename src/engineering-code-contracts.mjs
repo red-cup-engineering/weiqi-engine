@@ -1,8 +1,8 @@
 
+import { sha256Hex } from "@red-cup-engineering/semiotic-content-address-system";
 import { deepFreeze } from "@red-cup-engineering/signcell/values";
 import { admit } from "@red-cup-engineering/typed-content";
 import { readFile } from "node:fs/promises";
-import { createHash } from "node:crypto";
 import { canonicalizeJson as __factoryCanonicalize, JSON_RESOURCE_ENVELOPE as __factoryJsonBounds } from "@red-cup-engineering/json-engine/canonical-json";
 import { isPromise as __factoryIsPromise } from "node:util/types";
 import { isProxy as __factoryIsProxy } from "node:util/types";
@@ -97,7 +97,7 @@ export async function checkedOperation0(input) {
   if (!admit(__inputType0, request).ok) throw new TypeError("Design input disagreement: replay-engine");
   const location = new URL("./replay.mjs", import.meta.url);
   const bytes = await readFile(location);
-  const actual = "sha256:" + createHash("sha256").update(bytes).digest("hex");
+  const actual = "sha256:" + sha256Hex(bytes);
   if (actual !== "sha256:4937a09acb4f19bea68a5c152bcd44316812c35391626de0fb84d378e88e66d3") throw new Error("Design source revision disagreement: replay-engine");
   const module = await import(location.href + "?source=" + actual.slice(7));
   const implementation = module["createWeiqiGameEngine"];
